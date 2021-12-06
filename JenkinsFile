@@ -20,7 +20,7 @@ node {
     }    
     
     stage('a'){
-    rc = sh returnStatus: true, script: "${sfdxHome}\sfdx force:data:record:get -s Account -i 0017Q000005CIF9QAO
+    rc = sh returnStatus: true, script: "${sfdxHome}/sfdx force:data:record:get -s Account -i 0017Q000005CIF9QAO
     }
 
 }

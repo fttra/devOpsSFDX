@@ -1,5 +1,5 @@
 node {
-
+    def sfdxHome = tool 'sfdx'
     def BUILD_NUMBER=env.BUILD_NUMBER
     def RUN_ARTIFACT_DIR="tests/${BUILD_NUMBER}"
     def SFDC_USERNAME
@@ -14,7 +14,6 @@ node {
     println HUB_ORG
     println SFDC_HOST
     println CONNECTED_APP_CONSUMER_KEY
-    def toolbelt = tool 'toolbelt'
     
     stage('checkout source') {
         checkout scm
@@ -22,12 +21,7 @@ node {
     
     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
         stage('Get a record') {
-        def status = sh(returnStatus: true, script: "${sfdxHome}/sfdx force:data:record:create --s Account -v "Name=Dupa"")
-            if(status != 0 ){
-        error("Error during data insert to source sandbox.")
-    } else {
-         println("Sandbox info successfully created.")
-    }
-        }
+        
+       
     }
 }

@@ -14,10 +14,7 @@ node {
     println HUB_ORG
     println SFDC_HOST
     println CONNECTED_APP_CONSUMER_KEY
-    
-    stage('checkout source') {
-        checkout scm
-    }    
+   
     
     stage('a'){
     def rc = bat (returnStatus: true, script: "${sfdxHome}/sfdx force:data:record:get -s Account -i 0017Q000005CIF9")

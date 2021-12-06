@@ -14,9 +14,9 @@ node {
     println HUB_ORG
     println SFDC_HOST
     println CONNECTED_APP_CONSUMER_KEY
-	
-    }
+
 
         stage('Check Account') {
 	$ sfdx force:data:record:get -s Account -w "Name='Universal Containers'"		
     }
+}

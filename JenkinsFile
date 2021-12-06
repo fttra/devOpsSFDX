@@ -3,9 +3,7 @@ node {
     
     def BUILD_NUMBER=env.BUILD_NUMBER
     def RUN_ARTIFACT_DIR="tests/${BUILD_NUMBER}"
-    
-    def SFDC_USERNAME
-    
+       
     //username
     def HUB_ORG_DH=env.HUB_ORG_DH
     //SF org URL
@@ -16,10 +14,10 @@ node {
     def JWT_KEY_CRED_ID = env.JWT_CRED_ID_DH
 
     stage ('Print login info'){
-    println JWT_KEY_CRED_ID
     println HUB_ORG_DH
     println SFDC_HOST
     println CONNECTED_APP_CONSUMER_KEY
+    println JWT_KEY_CRED_ID
     }
     
     stage('Get a record'){

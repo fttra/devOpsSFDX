@@ -19,10 +19,7 @@ node {
     
     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
         stage('Get a record') {
-        script{
-           acc = bat label = '', returnStdout: true, script: "${toolbelt} force:data:record:get -s Account -w "Name=Acme""
-           echo acc
-        }
+        $ sfdx force:data:record:get -s Account -w "Name='Universal Containers'"   
         }
     }
 }

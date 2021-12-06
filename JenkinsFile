@@ -23,7 +23,7 @@ node {
     }
 
     stage('Create a record'){
-    def con = bat (returnStatus: true, script: "${sfdxHome}/sfdx force:data:record:create -s Contact -v Name='Fuck My Life'")
+    def con = bat (returnStatus: true, script: "${sfdxHome}/sfdx force:data:record:create -s Account -v Name='Fuck My Life'")
     if (con!=0)
     {
     print "Big success"

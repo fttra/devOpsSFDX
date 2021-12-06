@@ -20,7 +20,7 @@ node {
     }    
     
     stage('a'){
-    def rc = bat (returnStatus: true, script: ""${sfdxHome}\sfdx" force:data:record:get -s Account -i 0017Q000005CIF9")
+    def rc = bat (returnStatus: true, script: "${sfdxHome}/sfdx force:data:record:get -s Account -i 0017Q000005CIF9")
     print rc
     }
 

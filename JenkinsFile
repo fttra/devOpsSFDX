@@ -5,17 +5,19 @@ node {
     def RUN_ARTIFACT_DIR="tests/${BUILD_NUMBER}"
     
     def SFDC_USERNAME
-    def HUB_ORG=env.HUB_ORG_DH
-    def SFDC_HOST = env.SFDC_HOST_DH
     def JWT_KEY_CRED_ID = env.JWT_CRED_ID_DH
+    
+    //username
+    def USR_NAME=env.USR_NAME
+    def SFDC_HOST = env.SFDC_HOST_DH
     def CONNECTED_APP_CONSUMER_KEY=env.CONNECTED_APP_CONSUMER_KEY_DH
 
-    stage ('Print login info')
+    stage ('Print login info'){
     println JWT_KEY_CRED_ID
-    println HUB_ORG
+    println USR_NAME
     println SFDC_HOST
     println CONNECTED_APP_CONSUMER_KEY
-   
+    }
     
     stage('Get a record'){
     def acc = bat (returnStatus: true, script: "${sfdxHome}/sfdx force:data:record:get -s Account -i 0017Q000005CIF9")

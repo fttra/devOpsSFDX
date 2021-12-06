@@ -21,7 +21,7 @@ node {
     
     stage('a'){
     def rc = bat (returnStatus: true, script: "${sfdxHome} force:data:record:get -s Account -i 0017Q000005CIF9")
-    echo rc
+    print rc
     }
 
 }

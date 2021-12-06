@@ -1,9 +1,6 @@
 node {
     def sfdxHome = tool 'sfdx'
-    
-    def BUILD_NUMBER=env.BUILD_NUMBER
-    def RUN_ARTIFACT_DIR="tests/${BUILD_NUMBER}"
-       
+           
     //username
     def HUB_ORG_DH=env.HUB_ORG_DH
     //SF org URL

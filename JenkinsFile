@@ -32,7 +32,7 @@ node {
     {
     print "Great success"
     } else {
-    "You are miserable"
+    print "You are miserable"
     }
     }
     

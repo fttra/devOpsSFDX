@@ -27,7 +27,7 @@ node {
 	}
 	stage('Get a record'){		
 		def acc = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:record:get -s Account -i 0017Q000005CIF9 -u ${HUB_ORG}"
-    		if (acc!= 0) { error 'hub org authorization failed' }
+    //		if (acc!= 0) { error 'hub org authorization failed' }
 		
 		println acc
 	 }

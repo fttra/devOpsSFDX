@@ -17,8 +17,10 @@ node {
     println CONNECTED_APP_CONSUMER_KEY
     println JWT_KEY_CRED_ID
     }
-        stage('Deploye Code') {
-            	def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -u ${HUB_ORG} -f ${JWT_KEY_CRED_ID} -i ${CONNECTED_APP_CONSUMER_KEY}"
+    
+    withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
+        stage('Authorization') {
+            	def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -u ${HUB_ORG} -f ${jwt_key_file} -i ${CONNECTED_APP_CONSUMER_KEY}"
             	if (rc != 0) { error 'hub org authorization failed' }
 
 		println rc
@@ -29,7 +31,7 @@ node {
 		println acc
 	 
         }
-	
+	}
 }
 
 

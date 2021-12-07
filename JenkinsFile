@@ -19,6 +19,7 @@ node {
     
     stage('Get a record'){
     def acc = bat (returnStdout: true, script: "${sfdxHome}/sfdx force:data:record:get -s Account -i 0017Q000005CIF9")
+    def info = readJSON text: out
     if (acc!= 0){
     print acc
     } else {

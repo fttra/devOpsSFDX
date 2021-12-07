@@ -1,8 +1,9 @@
 node {
     def sfdxHome = tool 'sfdx'
+
            
     //username
-    def HUB_ORG_DH=env.HUB_ORG_DH
+    def HUB_ORG=env.HUB_ORG_DH
     //SF org URL
     def SFDC_HOST = env.SFDC_HOST_DH
     //consumer key

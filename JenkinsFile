@@ -16,10 +16,10 @@ node {
     println CONNECTED_APP_CONSUMER_KEY
     println JWT_KEY_CRED_ID
     }
-     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
+    withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
         stage('Deploye Code') {
             if (isUnix()) {
-                rc = bat returnStatus: true, script: "${toolbelt} force:auth:jwt:grant --clientid ${CONNECTED_APP_CONSUMER_KEY} --username ${HUB_ORG} --jwtkeyfile ${jwt_key_file} --setdefaultdevhubusername --instanceurl ${SFDC_HOST}"
+                rc = sh returnStatus: true, script: "${toolbelt} force:auth:jwt:grant --clientid ${CONNECTED_APP_CONSUMER_KEY} --username ${HUB_ORG} --jwtkeyfile ${jwt_key_file} --setdefaultdevhubusername --instanceurl ${SFDC_HOST}"
             }else{
                  rc = bat returnStatus: true, script: "\"${toolbelt}\" force:auth:jwt:grant --clientid ${CONNECTED_APP_CONSUMER_KEY} --username ${HUB_ORG} --jwtkeyfile \"${jwt_key_file}\" --setdefaultdevhubusername --instanceurl ${SFDC_HOST}"
             }
@@ -29,10 +29,14 @@ node {
 			
 			// need to pull out assigned username
 			if (isUnix()) {
-				rmsg = bat returnStdout: true, script: "${toolbelt} force:mdapi:deploy -d manifest/. -u ${HUB_ORG}"
+				rmsg = sh returnStdout: true, script: "${toolbelt} force:mdapi:deploy -d manifest/. -u ${HUB_ORG}"
 			}else{
 			   rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:mdapi:deploy -d manifest/. -u ${HUB_ORG}"
 			}
+			  
+            printf rmsg
+            println('Hello from a Job DSL script!')
+            println(rmsg)
 
     def acc = bat (script: "${sfdxHome}\\sfdx force:data:record:get -s Account -i 0017Q000005CIF9",returnStdout: true)
     if (acc!= 0){
@@ -40,16 +44,9 @@ node {
     } else {
     print "Error"
     }
- }
-
-    stage('Create a record'){
-    def con = bat (returnStdout: true, script: "${sfdxHome}\\sfdx force:data:record:create -s Account -v Name='Fuck My Life'")
-    if (con!=0)
-    {
-    print "Great success"
-    } else {
-    print "You are miserable"
+	 
+        }
     }
-    }
-    
 }
+
+

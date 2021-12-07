@@ -20,13 +20,11 @@ node {
     
     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
         stage('Authorization') {
-            	def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -u ${HUB_ORG} -f ${jwt_key_file} -i ${CONNECTED_APP_CONSUMER_KEY}"
+            	def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -u ${HUB_ORG} -f ${jwt_key_file} -i ${CONNECTED_APP_CONSUMER_KEY} --setdefaultusername"
             	if (rc != 0) { error 'hub org authorization failed' }
 
 		println rc
-			 def logoutStatus = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:logout"
 
-	 println logoutStatus
 	}
 	stage('Get a record'){		
 		def acc = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:record:get -s Account -i 0017Q000005CIF9 -u ${HUB_ORG}"

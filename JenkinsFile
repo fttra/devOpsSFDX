@@ -24,6 +24,9 @@ node {
             	if (rc != 0) { error 'hub org authorization failed' }
 
 		println rc
+			 def logoutStatus = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:logout"
+
+	 println logoutStatus
 	}
 	stage('Get a record'){		
 		def acc = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:record:get -s Account -i 0017Q000005CIF9 -u ${HUB_ORG}"

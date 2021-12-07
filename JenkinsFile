@@ -18,7 +18,7 @@ node {
     }
     
     stage('Get a record'){
-    def acc = bat (script: "${sfdxHome}/sfdx force:data:record:get -s Account -i 0017Q000005CIF9",returnStdout: true)
+    def acc = bat (script: "${sfdxHome}\\sfdx force:data:record:get -s Account -i 0017Q000005CIF9",returnStdout: true)
     if (acc!= 0){
     print acc
     } else {
@@ -27,7 +27,7 @@ node {
     }
 
     stage('Create a record'){
-    def con = bat (returnStdout: true, script: "${sfdxHome}/sfdx force:data:record:create -s Account -v Name='Fuck My Life'")
+    def con = bat (returnStdout: true, script: "${sfdxHome}\\sfdx force:data:record:create -s Account -v Name='Fuck My Life'")
     if (con!=0)
     {
     print "Great success"

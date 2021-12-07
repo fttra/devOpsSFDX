@@ -28,14 +28,18 @@ node {
 	}
 	stage('Get a record'){		
 		def acc = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:record:get -s Account -i 0017Q000005CIF9 -u ${HUB_ORG}"
-    //		if (acc!= 0) { error 'hub org authorization failed' }
 		
 		println acc
 	 }
+	stage('Create a record'){		
+		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:record:create -s Account -v Name=\"Fuck my Life\""
+		
+		println con
+	 }	 
 	 stage('Logut'){
-	 def logoutStatus = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:logout"
+	 	def logoutStatus = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:logout"
 
-	 println logoutStatus
+	 	println logoutStatus
 	 }
         }	
 }

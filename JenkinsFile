@@ -40,7 +40,7 @@ node {
     } else {
     print "Error"
     }
- 
+ }
 
     stage('Create a record'){
     def con = bat (returnStdout: true, script: "${sfdxHome}\\sfdx force:data:record:create -s Account -v Name='Fuck My Life'")

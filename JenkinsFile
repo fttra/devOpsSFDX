@@ -22,7 +22,7 @@ node {
             steps {
                 script{
                 PROV_LIST = ""
-                PROV_LIST = load 'Account.csv'
+                PROV_LIST = readFile ('Account.csv')
                 }
 		}
             }

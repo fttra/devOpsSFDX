@@ -20,8 +20,8 @@ node {
 
         stage('Load the variables') {
                 script{
-                PROV_LIST = ""
-                PROV_LIST = readFile (file: 'src/Account.csv')
+		git 'https://github.com/fttra/devOpsSFDX.git/'
+                PROV_LIST = load 'Account.csv'
                 }
             }
     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {

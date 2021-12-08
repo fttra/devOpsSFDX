@@ -30,8 +30,8 @@ node {
 		
 		println acc
 	 }
-	stage('Create a record'){		
-		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:record:create -s Account -v Name=\"WhyThisNeedsToBeOneLine\""
+	stage('Update file'){		
+		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f ./import/Account.csv -i Id"
 		
 		println con
 	 }	 

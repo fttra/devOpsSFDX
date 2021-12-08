@@ -17,7 +17,7 @@ node {
     println CONNECTED_APP_CONSUMER_KEY
     println JWT_KEY_CRED_ID
     }
-    
+
     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
         stage('Authorization') {
             	def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -u ${HUB_ORG} -f ${jwt_key_file} -i ${CONNECTED_APP_CONSUMER_KEY} --setdefaultusername"
@@ -31,7 +31,7 @@ node {
 		println acc
 	 }
 	stage('Update file'){		
-		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f Account.csv -i Id"
+		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f 'Account.csv' -i Id"
 		
 		println con
 	 }	 

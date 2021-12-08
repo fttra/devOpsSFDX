@@ -31,7 +31,7 @@ node {
 		println acc
 	 } */
 	stage('Update file'){		
-		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f Account.csv -i Id"
+		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:mdapi:deploy -d manifest/. -u ${HUB_ORG}"
 		
 		println con
 	 }	 

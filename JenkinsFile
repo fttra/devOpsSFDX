@@ -25,11 +25,11 @@ node {
 
 		println rc
 	}
-	stage('Get a record'){		
+/*	stage('Get a record'){		
 		def acc = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:record:get -s Account -i 0017Q000005CIF9 -u ${HUB_ORG}"
 		
 		println acc
-	 }
+	 } */
 	stage('Update file'){		
 		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f Account.csv -i Id"
 		

@@ -26,10 +26,10 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
 		println rc
 	}
-    dir ('git branch: \'main\', url: \'https://github.com/fttra/devOpsSFDX.git\''){
+    dir ('github.com/fttra/devOpsSFDX'){
 	stage('Update file'){	
 
-		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f Account.csv -i Id -u ${HUB_ORG}"
+		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${HUB_ORG}"
 		
 		println con
     }

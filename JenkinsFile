@@ -32,8 +32,8 @@ node {
 	 } */
 	stage('Update file'){	
 
-        println dir
-
+  //      println dir
+        dir
 		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f C:/personal-repo/devOpsSFDX/ -i Id -u ${HUB_ORG}"
 		
 		println con

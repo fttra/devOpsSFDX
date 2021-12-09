@@ -1,15 +1,39 @@
 node {
     def sfdxHome = tool 'sfdx'
 
-           
+    //newVariables
     //username
-    def HUB_ORG=env.HUB_ORG_DH
+    def HUB_ORG
     //SF org URL
-    def SFDC_HOST = env.SFDC_HOST_DH
+    def SFDC_HOST
     //consumer key
-    def CONNECTED_APP_CONSUMER_KEY=env.CONNECTED_APP_CONSUMER_KEY_DH
+    def CONNECTED_APP_CONSUMER_KEY
     //credentials
-    def JWT_KEY_CRED_ID = env.JWT_CRED_ID_DH
+    def JWT_KEY_CRED_ID
+
+
+
+    stage ('Credentials based on env'){
+        if ("${params.Environment}" == "Env1"){
+            //env1 credentials:
+
+            //username
+            HUB_ORG=env.env1_HUB_ORG_DH
+            //SF org URL
+            SFDC_HOST = env.env1_SFDC_HOST_DH
+            //consumer key
+            CONNECTED_APP_CONSUMER_KEY=env.env1_CONNECTED_APP_CONSUMER_KEY_DH
+            //credentials
+            JWT_KEY_CRED_ID = env.env1_JWT_CRED_ID_DH
+
+        } else if ("${params.Environment}" == "Env2"){
+        error ("Error")
+        } else ("${params.Environment}" == "Env2"){
+            error ("error 2")
+        }
+    }
+           
+
 
     stage ('Print login info'){
     println HUB_ORG_DH
@@ -33,7 +57,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 		
 		println con
     }
-	 stage('Logut'){
+	 stage('Logout'){
 	 	def logoutStatus = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:logout"
 
 	 	println logoutStatus

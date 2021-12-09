@@ -19,7 +19,7 @@ node {
     }
 
     stage ('What a directory') {
-        def aaa = dir
+        def aaa = script: "dir"
         println aaa
     }
 

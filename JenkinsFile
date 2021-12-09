@@ -36,7 +36,7 @@ node {
 
 
     stage ('Print login info'){
-    println HUB_ORG_DH
+    println HUB_ORG
     println SFDC_HOST
     println CONNECTED_APP_CONSUMER_KEY
     println JWT_KEY_CRED_ID

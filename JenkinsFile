@@ -26,7 +26,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
 		println rc
 	}
-    dir ('C:/personal-repo/devOpsSFDX'){
+    dir ('github.com/fttra/devOpsSFDX/blob/main/import/Account.csv'){
 	stage('Update file'){	
 
 		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f C:/personal-repo/devOpsSFDX/Account.csv -i Id -u ${HUB_ORG}"

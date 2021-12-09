@@ -19,7 +19,7 @@ node {
     }
 
     stage ('What a directory') {
-        println dir
+        dir
     }
 
     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {

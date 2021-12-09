@@ -1,5 +1,6 @@
 node {
     def sfdxHome = tool 'sfdx'
+    def gitHome = 'C:/personal-repo/devOpsSFDX'
 
            
     //username
@@ -26,7 +27,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
 		println rc
 	}
-    dir ('github.com/fttra/devOpsSFDX'){
+    dir ("${gitHome}"){
 	stage('Update file'){	
 
 		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${HUB_ORG}"

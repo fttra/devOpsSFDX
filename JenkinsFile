@@ -35,13 +35,13 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 		
 		println con
     }
-    dir ("${HOME}"){
+  //  dir ("${HOME}"){
 	 stage('Logut'){
 	 	def logoutStatus = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:logout"
 
 	 	println logoutStatus
 	    }
-    }
+    //}
    // }	
 }
 }

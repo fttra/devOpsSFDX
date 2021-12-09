@@ -30,7 +30,10 @@ node {
 		
 		println acc
 	 } */
-	stage('Update file'){		
+	stage('Update file'){	
+
+        println dir /s
+
 		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f ./import/Account.csv -i Id -u ${HUB_ORG}"
 		
 		println con

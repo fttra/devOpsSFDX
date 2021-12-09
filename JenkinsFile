@@ -28,7 +28,7 @@ node {
 
         } else if ("${params.Environment}" == "Env2"){
         error ("Error")
-        } else ("${params.Environment}" == "Env2"){
+        } else ("${params.Environment}" == "Env3"){
             error ("error 2")
         }
     }

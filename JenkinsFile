@@ -27,9 +27,10 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
 		println rc
 	}
-    dir ("${gitHome}"){
-	stage('Update file'){	
 
+//    dir ("${gitHome}"){
+	stage('Update file'){	
+    checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/fttra/devOpsSFDX.git']]])
 		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${HUB_ORG}"
 		
 		println con
@@ -41,7 +42,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	 	println logoutStatus
 	    }
     }
-    }	
+   // }	
 }
 }
 }

@@ -27,15 +27,36 @@ node {
             JWT_KEY_CRED_ID = env.env1_JWT_CRED_ID_DH
 
         } else if ("${params.Environment}" == "Env2"){
-        error ("Error")
-        } else ("${params.Environment}" == "Env3"){
-            error ("error 2")
+            //env2 credentials:
+
+            //username
+            HUB_ORG=env.env2_HUB_ORG_DH
+            //SF org URL
+            SFDC_HOST = env.env2_SFDC_HOST_DH
+            //consumer key
+            CONNECTED_APP_CONSUMER_KEY=env.env2_CONNECTED_APP_CONSUMER_KEY_DH
+            //credentials
+            JWT_KEY_CRED_ID = env.env2_JWT_CRED_ID_DH
+
+        } else if ("${params.Environment}" == "Env3"){
+            //env3 credentials:
+
+            //username
+            HUB_ORG=env.env3_HUB_ORG_DH
+            //SF org URL
+            SFDC_HOST = env.env3_SFDC_HOST_DH
+            //consumer key
+            CONNECTED_APP_CONSUMER_KEY=env.env3_CONNECTED_APP_CONSUMER_KEY_DH
+            //credentials
+            JWT_KEY_CRED_ID = env.env3_JWT_CRED_ID_DH
+        } else {
+            error ("Wrong parameters provided")
         }
     }
            
 
 
-    stage ('Print login info'){
+    stage ('Print login informations'){
     println HUB_ORG
     println SFDC_HOST
     println CONNECTED_APP_CONSUMER_KEY
@@ -44,7 +65,7 @@ node {
 
 withEnv(["HOME=${env.WORKSPACE}"]){
     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
-        stage('Authorization') {
+        stage('Authorization to Salesforce') {
             	def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -u ${HUB_ORG} -f ${jwt_key_file} -i ${CONNECTED_APP_CONSUMER_KEY} --setdefaultusername"
             	if (rc != 0) { error 'hub org authorization failed' }
 

@@ -19,7 +19,8 @@ node {
     }
 
     stage ('What a directory') {
-        dir
+        def aaa = dir
+        println aaa
     }
 
     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
@@ -36,8 +37,6 @@ node {
 	 } */
 	stage('Update file'){	
 
-  //      println dir
-        dir
 		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f C:/personal-repo/devOpsSFDX/ -i Id -u ${HUB_ORG}"
 		
 		println con

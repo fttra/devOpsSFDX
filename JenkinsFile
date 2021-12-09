@@ -27,10 +27,12 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 		println rc
 	}
     dir ('C:/personal-repo/devOpsSFDX'){
+        stage('Somethin'){
         def LIST_VIEW = ""
         LIST_VIEW = load ('Account.csv')
 
         print LIST_VIEW
+        }
     }
 /*	stage('Get a record'){		
 		def acc = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:record:get -s Account -i 0017Q000005CIF9 -u ${HUB_ORG}"

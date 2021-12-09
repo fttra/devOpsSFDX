@@ -27,29 +27,17 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 		println rc
 	}
     dir ('C:/personal-repo/devOpsSFDX'){
-        stage('Somethin'){
-        def LIST_VIEW = ""
-        LIST_VIEW = load ('Account.csv')
-
-        print LIST_VIEW
-        }
-    }
-/*	stage('Get a record'){		
-		def acc = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:record:get -s Account -i 0017Q000005CIF9 -u ${HUB_ORG}"
-		
-		println acc
-	 } */
 	stage('Update file'){	
 
 		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f C:/personal-repo/devOpsSFDX/ -i Id -u ${HUB_ORG}"
 		
 		println con
-	 }	 
+	    }	 
 	 stage('Logut'){
 	 	def logoutStatus = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:logout"
 
 	 	println logoutStatus
-	 }
-        }	
+	    }
+    }	
 }
 }

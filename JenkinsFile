@@ -18,6 +18,10 @@ node {
     println JWT_KEY_CRED_ID
     }
 
+    stage ('What a directory') {
+        println dir
+    }
+
     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
         stage('Authorization') {
             	def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -u ${HUB_ORG} -f ${jwt_key_file} -i ${CONNECTED_APP_CONSUMER_KEY} --setdefaultusername"

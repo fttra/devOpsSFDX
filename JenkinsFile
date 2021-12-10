@@ -48,6 +48,7 @@ def authenticateToSalesforce(sfdxHome, config, org){
 }
 
 def validateEnvironment (config, org){
+println config.credential[org]
 
     if (!config.containsKey(org)){
         error ("Nope")

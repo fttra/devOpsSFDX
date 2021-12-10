@@ -7,7 +7,7 @@ node {
     //credential folder
     stage ('Get credentials'){
     checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/fttra/devOpsSFDX.git']]])
-    def resource = libraryResource resource: 'readFile-config.yml'
+    def resource = libraryResource resource: 'resources/readFile-config.yml'
     println(resource)
     def config = readYaml text: resource
     }

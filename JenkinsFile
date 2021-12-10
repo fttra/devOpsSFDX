@@ -8,7 +8,7 @@ node {
     def resource = libraryResource resource: 'readFile-config.yml'
     println(resource)
     def config = readYaml text: resource
-
+    
 
 
 withEnv(["HOME=${env.WORKSPACE}"]){
@@ -20,19 +20,19 @@ withEnv(["HOME=${env.WORKSPACE}"]){
         authenticateToSalesforce(sfdxHome, config, devHubName)
 	}
 
-	stage('Update file'){	
-    checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/fttra/devOpsSFDX.git']]])
-		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${config.credentials[org].username}"
-		
-		println con
+	stage('Update file'){
+        logoutFromSalesforce(sfdxHome)
+        authenticateToSalesforce(sfdxHome, config, devHubName)
+        updateFiles(sfdxHome)
     }
 	 stage('Logout'){
-	 	def logoutStatus = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:logout"
-
-	 	println logoutStatus
+	 	logoutFromSalesforce(sfdxHome)
 	    }
 }
 }
+
+
+
 
 def authenticateToSalesforce(sfdxHome, config, org){
     withCredentials([
@@ -41,7 +41,7 @@ def authenticateToSalesforce(sfdxHome, config, org){
     ]) {
         
         def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -i ${CLIENT_ID} -u ${config.credentials[org].username} -f ${KEY_FILE}  --setdefaultusername"
-        if (rc != 0) { error 'hub org authorization failed' }
+        if (rc != 0) { error 'Authorization failed' }
 
         println rc
     } 
@@ -49,7 +49,28 @@ def authenticateToSalesforce(sfdxHome, config, org){
 
 def validateEnvironment (config, org){
     if(config.credentials[org] == null){
-        error ("There is no environment with the name of " + org)
+        error ("There is no environment with the name: " + org)
     }
     print config.credentials[org]
+}
+
+def logoutFromSalesforce(sfdxHome){
+    def logoutStatus = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:logout -a -p --json > logout.json"
+
+    if (logoutStatus!=0){
+        jsonOut = readJSON file: 'logout.json'
+        if (jsonOut.name != 'noOrgsFound'){
+            error(jsonOut.message)
+        } else {
+            println("No orgs to be logout from")
+        }
+    }
+
+	println "Successfully logout from Salesforce"
+}
+
+def updateFiles (sfdxHome) {
+    	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${config.credentials[org].username}"
+		
+		println con
 }

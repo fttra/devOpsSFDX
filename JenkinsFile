@@ -48,7 +48,8 @@ def authenticateToSalesforce(sfdxHome, config, org){
 }
 
 def validateEnvironment (config, org){
-    if (!config.contains(org)){
+
+    if (!config.containsKey(org)){
         error ("Nope")
     }
 }

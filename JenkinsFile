@@ -18,7 +18,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
     }
 
     stage ('Validate file to upload'){
-        validateEnvironment(config, devHubName)
+        validateFile(objectType)
     }
 
     stage('Authentication to Salesforce') {

@@ -1,4 +1,4 @@
-@Library('Jenkinstools@master') _
+@Library('Jenkinstools@main') _
 node {
     def sfdxHome = tool 'sfdx'
     def devHubName = "${params.Environment}"

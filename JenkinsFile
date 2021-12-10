@@ -3,6 +3,7 @@ node {
     def sfdxHome = tool 'sfdx'
     def devHubName = "${params.Environment}"
     def sandboxName = env.SANDBOX_NAME
+    def objectType = "${params.Object}"
 
     //credential folder
     def resource = libraryResource resource: 'readFile-config.yml'
@@ -13,6 +14,10 @@ node {
 
 withEnv(["HOME=${env.WORKSPACE}"]){
     stage ('Validate environment'){
+        validateEnvironment(config, devHubName)
+    }
+
+    stage ('Validate file to upload'){
         validateEnvironment(config, devHubName)
     }
 
@@ -69,8 +74,14 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def updateFiles (sfdxHome, config, org) {
-    	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${config.credentials[org].username}"
+validateFile (objectType){
+    if (!fileExists("/import/${objectType}.csv"){
+        error ("There is no file to update records or the file name has a different name than the object You want to update")
+    }
+}
+
+def updateFiles (sfdxHome, config, org, objectType) {
+    	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${objectType}.csv -i Id -u ${config.credentials[org].username}"
 		
 		println con
 }

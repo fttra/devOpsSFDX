@@ -1,5 +1,5 @@
 @Library('Jenkinstools@main')
-node {
+node ('linux') {
     def sfdxHome = tool 'sfdx'
     def devHubName = "${params.Environment}"
     def sandboxName = env.SANDBOX_NAME

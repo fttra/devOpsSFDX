@@ -74,7 +74,7 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-validateFile (objectType){
+def validateFile (objectType){
     if (!fileExists("/import/${objectType}.csv")){
         error ("There is no file to update records or the file name has a different name than the object You want to update")
     }

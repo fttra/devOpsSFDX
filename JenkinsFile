@@ -75,14 +75,14 @@ def logoutFromSalesforce(sfdxHome){
 }
 
 def validateFile (objectType){
-    println "import/${objectType}.csv"
     if (!fileExists("import/${objectType}.csv")){
         error ("There is no file to update records or the file name has a different name than the object You want to update")
+    } else {
+        println ("File was found. Proceeding ... ")
     }
 }
 
 def updateFiles (sfdxHome, config, org, objectType) {
     	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${objectType}.csv -i Id -u ${config.credentials[org].username}"
-		
 		println con
 }

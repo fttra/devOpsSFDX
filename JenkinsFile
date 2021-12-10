@@ -75,7 +75,7 @@ def logoutFromSalesforce(sfdxHome){
 }
 
 validateFile (objectType){
-    if (!fileExists("/import/${objectType}.csv"){
+    if (!fileExists("/import/${objectType}.csv")){
         error ("There is no file to update records or the file name has a different name than the object You want to update")
     }
 }

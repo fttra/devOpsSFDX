@@ -69,15 +69,15 @@ POZA TYM:
 
 */
 
-
+/*
 def validateEnvironment(org){
     if (config.credentials[org] == null){
         error ("There is no such environment")
     }
-} 
+} */
 
 def authenticateToSalesforce(sfdxHome, config, org){
-
+try{
     withCredentials([
         file(credentialsId: config.credentials[org].connapp_consumerkey_id, variable: 'CLIENT_ID'),
         file(credentialsId: config.credentials[org].cred_id,  variable: 'KEY_FILE'),
@@ -89,4 +89,7 @@ def authenticateToSalesforce(sfdxHome, config, org){
 
         println rc
     }
+} catch (Exception e){
+    println ("Message " + e)
+}
 }

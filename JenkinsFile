@@ -51,7 +51,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	    }
 }
 }
-}
+
 
 
 /*Chodzi o to, ze jak masz parametry to zeby juz nie trzeba bylo ingerowac w kod skryptu

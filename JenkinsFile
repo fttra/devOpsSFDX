@@ -1,75 +1,41 @@
+@Library('Jenkinstools@master')
 node {
     def sfdxHome = tool 'sfdx'
+    def devHubName = "${params.Environment}"
+    def sandboxName = env.SANDBOX_NAME
 
-    //newVariables
+    //credential folder
+    def resource = libraryResource resource: 'readFile-config.yml'
+    println(resource)
+    def config = readYaml text: resource
+
+
     //username
-    def HUB_ORG
+    def SF_USERNAME
     //SF org URL
     def SFDC_HOST
     //consumer key
-    def CONNECTED_APP_CONSUMER_KEY
+    def CLIENT_ID
     //credentials
-    def JWT_KEY_CRED_ID
+    def KEY_FILE
 
-
-
-    stage ('Credentials based on env'){
-        if ("${params.Environment}" == "Env1"){
-            //env1 credentials:
-
-            //username
-            HUB_ORG=env.env1_HUB_ORG_DH
-            //SF org URL
-            SFDC_HOST = env.env1_SFDC_HOST_DH
-            //consumer key
-            CONNECTED_APP_CONSUMER_KEY=env.env1_CONNECTED_APP_CONSUMER_KEY_DH
-            //credentials
-            JWT_KEY_CRED_ID = env.env1_JWT_CRED_ID_DH
-
-        } else if ("${params.Environment}" == "Env2"){
-            //env2 credentials:
-
-            //username
-            HUB_ORG=env.env2_HUB_ORG_DH
-            //SF org URL
-            SFDC_HOST = env.env2_SFDC_HOST_DH
-            //consumer key
-            CONNECTED_APP_CONSUMER_KEY=env.env2_CONNECTED_APP_CONSUMER_KEY_DH
-            //credentials
-            JWT_KEY_CRED_ID = env.env2_JWT_CRED_ID_DH
-
-        } else if ("${params.Environment}" == "Env3"){
-            //env3 credentials:
-
-            //username
-            HUB_ORG=env.env3_HUB_ORG_DH
-            //SF org URL
-            SFDC_HOST = env.env3_SFDC_HOST_DH
-            //consumer key
-            CONNECTED_APP_CONSUMER_KEY=env.env3_CONNECTED_APP_CONSUMER_KEY_DH
-            //credentials
-            JWT_KEY_CRED_ID = env.env3_JWT_CRED_ID_DH
-        } else {
-            error ("Wrong parameters provided")
-        }
-    }
            
-
+    stage ('Environment check'){
+        validateEnvironment(devHubName)
+    }
 
     stage ('Print login informations'){
-    println HUB_ORG
+    println SF_USERNAME
     println SFDC_HOST
-    println CONNECTED_APP_CONSUMER_KEY
-    println JWT_KEY_CRED_ID
+    println CLIENT_ID
+    println KEY_FILE
     }
 
-withEnv(["HOME=${env.WORKSPACE}"]){
-    withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
-        stage('Authorization to Salesforce') {
-            	def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -u ${HUB_ORG} -f ${jwt_key_file} -i ${CONNECTED_APP_CONSUMER_KEY} --setdefaultusername"
-            	if (rc != 0) { error 'hub org authorization failed' }
 
-		println rc
+
+withEnv(["HOME=${env.WORKSPACE}"]){
+        stage('Authentication to Salesforce') {
+            	authenticateToSalesforce(sfdxHome, config, devHubName)
 	}
 
 	stage('Update file'){	
@@ -85,4 +51,41 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	    }
 }
 }
+}
+
+
+/*Chodzi o to, ze jak masz parametry to zeby juz nie trzeba bylo ingerowac w kod skryptu
+
+Metoda która:
+1. czyta credentiale i jako parametr przyjmuje środowisko
+2. Zdefiniuj liste dopuszczalnych środowisk lub sprawdź czy jest w pickliście (SPRAWDŹ CZY JEST W PICKLIŚCIE)
+3. Jak nie ma credentiali to error ze nie ma srodowiska 
+
+POZA TYM:
+1. nie przypisuj wartości credentiali do zmiennych 
+2. do zmienny przypisz nazwe credentiala
+3. przekaz do wlasciwej metody i uzyj w withCredentials
+
+*/
+
+
+def validateEnvironment(org){
+    if (config.credentials[org] == null){
+        error ("There is no such environment")
+    }
+} 
+
+def authenticateToSalesforce(sfdxHome, config, org){
+
+    withCredentials([
+        file(credentialsId: config.credentials[org].connapp_consumerkey_id, variable: 'CLIENT_ID'),
+        file(credentialsId: config.credentials[org].cred_id,  variable: 'KEY_FILE'),
+        file(credentialsId: config.credentials[org].username,  variable: 'SF_USERNAME')
+    ]) {
+        
+        def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -i ${CLIENT_ID} -u ${SF_USERNAME} -f ${KEY_FILE}  --setdefaultusername"
+        if (rc != 0) { error 'hub org authorization failed' }
+
+        println rc
+    }
 }

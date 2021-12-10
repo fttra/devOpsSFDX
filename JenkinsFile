@@ -7,24 +7,19 @@ node {
     //credential folder
     def resource = libraryResource resource: 'readFile-config.yml'
     println(resource)
-    def config = readYaml text: resource
+    def config = readYaml text: resources
 
 
-
-    //username
-    def SF_USERNAME
-    //SF org URL
-    def SFDC_HOST
-    //consumer key
-    def CLIENT_ID
-    //credentials
-    def KEY_FILE
-
-           
 
 withEnv(["HOME=${env.WORKSPACE}"]){
-        stage('Authentication to Salesforce') {
-            	authenticateToSalesforce(sfdxHome, config, devHubName)
+    stage ('Validate environment'){
+        validateEnvironment(config,devHubName)
+    }
+
+
+
+    stage('Authentication to Salesforce') {
+        authenticateToSalesforce(sfdxHome, config, devHubName)
 	}
 
 	stage('Update file'){	
@@ -40,8 +35,8 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	    }
 }
 }
+
 def authenticateToSalesforce(sfdxHome, config, org){
-try{
     withCredentials([
         string(credentialsId: config.credentials[org].connapp_consumerkey_id, variable: 'CLIENT_ID'),
         file(credentialsId: config.credentials[org].cred_id,  variable: 'KEY_FILE'),
@@ -51,8 +46,11 @@ try{
         if (rc != 0) { error 'hub org authorization failed' }
 
         println rc
-    }
-} catch (Exception e){
-    println ("Message " + e)
+    } 
 }
+
+def validateEnvironment (config, org){
+    if (!config.contains(org)){
+        error ("Nope")
+    }
 }

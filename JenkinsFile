@@ -48,5 +48,8 @@ def authenticateToSalesforce(sfdxHome, config, org){
 }
 
 def validateEnvironment (config, org){
-println config.credentials[org]
+    if(config.credentials[org] == null){
+        error ("There is no environment with the name of " + org)
+    }
+    print config.credentials[org]
 }

@@ -21,18 +21,6 @@ node {
     def KEY_FILE
 
            
-    stage ('Environment check'){
-        validateEnvironment(devHubName)
-    }
-
-    stage ('Print login informations'){
-    println SF_USERNAME
-    println SFDC_HOST
-    println CLIENT_ID
-    println KEY_FILE
-    }
-
-
 
 withEnv(["HOME=${env.WORKSPACE}"]){
         stage('Authentication to Salesforce') {

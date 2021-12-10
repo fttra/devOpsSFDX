@@ -7,16 +7,14 @@ node {
     //credential folder
     def resource = libraryResource resource: 'readFile-config.yml'
     println(resource)
-    def config = readYaml text: resources
+    def config = readYaml text: resource
 
 
 
 withEnv(["HOME=${env.WORKSPACE}"]){
     stage ('Validate environment'){
-        validateEnvironment(config,devHubName)
+        validateEnvironment(config, devHubName)
     }
-
-
 
     stage('Authentication to Salesforce') {
         authenticateToSalesforce(sfdxHome, config, devHubName)

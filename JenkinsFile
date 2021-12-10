@@ -23,7 +23,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
         authenticateToSalesforce(sfdxHome, config, devHubName)
-        updateFiles(sfdxHome, config)
+        updateFiles(sfdxHome, config, org)
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -69,7 +69,7 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def updateFiles (sfdxHome, config) {
+def updateFiles (sfdxHome, config, org) {
     	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${config.credentials[org].username}"
 		
 		println con

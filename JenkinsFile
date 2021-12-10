@@ -1,11 +1,11 @@
-//@Library('Jenkinstools@master')
+@Library('Jenkinstools@main')
 node {
     def sfdxHome = tool 'sfdx'
     def devHubName = "${params.Environment}"
     def sandboxName = env.SANDBOX_NAME
 
     //credential folder
-    def resource = libraryResource resource: 'readFile-config.yml'
+    def resource = libraryResource resource: 'resources/readFile-config.yml'
     println(resource)
     def config = readYaml text: resource
 

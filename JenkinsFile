@@ -29,7 +29,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
 	stage('Update file'){	
     checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/fttra/devOpsSFDX.git']]])
-		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${SF_USERNAME}"
+		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${config.credentials[org].username}"
 		
 		println con
     }
@@ -43,12 +43,11 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 def authenticateToSalesforce(sfdxHome, config, org){
 try{
     withCredentials([
-        file(credentialsId: config.credentials[org].connapp_consumerkey_id, variable: 'CLIENT_ID'),
+        string(credentialsId: config.credentials[org].connapp_consumerkey_id, variable: 'CLIENT_ID'),
         file(credentialsId: config.credentials[org].cred_id,  variable: 'KEY_FILE'),
-        file(credentialsId: config.credentials[org].username,  variable: 'SF_USERNAME')
     ]) {
         
-        def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -i ${CLIENT_ID} -u ${SF_USERNAME} -f ${KEY_FILE}  --setdefaultusername"
+        def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -i ${CLIENT_ID} -u ${config.credentials[org].username} -f ${KEY_FILE}  --setdefaultusername"
         if (rc != 0) { error 'hub org authorization failed' }
 
         println rc

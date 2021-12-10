@@ -29,7 +29,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
 	stage('Update file'){	
     checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/fttra/devOpsSFDX.git']]])
-		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${HUB_ORG}"
+		def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s Account -f import/Account.csv -i Id -u ${SF_USERNAME}"
 		
 		println con
     }
@@ -40,30 +40,6 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	    }
 }
 }
-
-
-
-/*Chodzi o to, ze jak masz parametry to zeby juz nie trzeba bylo ingerowac w kod skryptu
-
-Metoda która:
-1. czyta credentiale i jako parametr przyjmuje środowisko
-2. Zdefiniuj liste dopuszczalnych środowisk lub sprawdź czy jest w pickliście (SPRAWDŹ CZY JEST W PICKLIŚCIE)
-3. Jak nie ma credentiali to error ze nie ma srodowiska 
-
-POZA TYM:
-1. nie przypisuj wartości credentiali do zmiennych 
-2. do zmienny przypisz nazwe credentiala
-3. przekaz do wlasciwej metody i uzyj w withCredentials
-
-*/
-
-/*
-def validateEnvironment(org){
-    if (config.credentials[org] == null){
-        error ("There is no such environment")
-    }
-} */
-
 def authenticateToSalesforce(sfdxHome, config, org){
 try{
     withCredentials([

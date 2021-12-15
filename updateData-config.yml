@@ -1,0 +1,27 @@
+core_properties:
+  bitbucket_parameters:
+    bitbucket_cred_mail: "Filip.Teter@contracted.pmi.com"
+    bitbucket_cred_name: "fteter@PMINTL.NET"
+    bitbucket_protocol: "https"
+    #    TO VERIFY IF WE NEED BASE AND BASE_URL SEPARATELY
+    bitbucket_base: "source.app.pconnect.biz"
+    bitbucket_base_url: "https://source.app.pconnect.biz"
+    bitbucket_base_api_url: "https://source.app.pconnect.biz/rest/api/1.0/projects"
+    bitbucket_cred_id: "ESDBitBucketTechnicalAccess"
+    bitbucket_url_encoded_cred_id: "ESDBitBucketTechnicalAccessEncodedURL"
+    bitbucket_src_rep: "https://source.app.pconnect.biz/scm/esdp/esd-pmi-salesforce.git"
+    bitbucket_release_rep: ""
+    bitbucket_src_rep_scm: "scm/esdp/esd-pmi-salesforce.git"
+    bitbucket_src_project_name: "ESDP"
+    bitbucket_src_rep_name: "esd-pmi-salesforce"
+credentials:
+  Transla2:
+    server_url: "https://test.salesforce.com"
+    username: "filip.teter@my-pmi.com.transla2"
+    connapp_consumerkey_id: "transla2ConnectedAppInfo"
+    cred_id: "serverKeyEsdDxSandbox"
+  Env2:
+    server_url: "https://test.salesforce.com"
+    username: "filip.teter@my-pmi.com.transla2"
+    connapp_consumerkey_id: "transla2ConnectedAppInfo"
+    cred_id: "serverKeyEsdDxSandbox"

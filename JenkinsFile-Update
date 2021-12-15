@@ -28,7 +28,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
     }
 
     stage ('Validate file to upload'){
-        checkoutSourceRepository(repoUrl, bitbucket_cred_id, branchToCheckout, bitbucket_cred_mail, bitbucket_cred_name, targetProjectDirName)
+        checkoutSourceRepository(repoUrl, bitbucket_cred_id, branchToCheckout, bitbucket_cred_mail, bitbucket_cred_name)
         validateFile()
     }
 
@@ -47,7 +47,22 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 }
 }
 
+def validateEnvironment (environmentList, org){
+    if(environmentList.contains(org) == null){
+        error ("There is no environment with the name: " + org)
+    }
+    print "Validation successful. Proceeding ..."
+}
 
+def checkoutSourceRepository(repoUrl, bitbucket_cred_id, branchToCheckout, bitbucket_cred_mail, bitbucket_cred_name){
+    checkout([
+                    $class           : 'GitSCM',
+                    branches         : [[name: "${branchToCheckout}"]],
+                    extensions       : [[$class: 'UserIdentity', email: "${bitbucket_cred_mail}", name: "${bitbucket_cred_name}"],
+                                        [$class: 'CleanBeforeCheckout'],
+                    userRemoteConfigs: [[credentialsId: "${bitbucket_cred_id}", url: repoUrl]]
+            ])
+}
 
 
 def authenticateToSalesforce(sfdxHome, username, org){
@@ -63,11 +78,13 @@ def authenticateToSalesforce(sfdxHome, username, org){
     } 
 }
 
-def validateEnvironment (environmentList, org){
-    if(environmentList.contains(org) == null){
-        error ("There is no environment with the name: " + org)
+
+def validateFile(){
+    if (!fileExists("data/TESTLS _users.csv")){
+        error ("There is no file to update records or the file has a different name than the object You want to update")
+    } else {
+        println ("File was found. Proceeding ... ")
     }
-    print "Validation successful. Proceeding ..."
 }
 
 def logoutFromSalesforce(sfdxHome){
@@ -85,25 +102,10 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def validateFile(){
-    if (!fileExists("data/TESTLS _users.csv")){
-        error ("There is no file to update records or the file has a different name than the object You want to update")
-    } else {
-        println ("File was found. Proceeding ... ")
-    }
-}
 
 def updateFiles (sfdxHome, org, objectType) {
     	def con = sh returnStdout: true, script: "${sfdxHome}/sfdx force:data:bulk:upsert -s ${objectType} -f data/${objectType}.csv -i Id -u ${config.credentials[org].username}"
 		println con
 }
 
-def checkoutSourceRepository(repoUrl, bitbucket_cred_id, branchToCheckout, bitbucket_cred_mail, bitbucket_cred_name){
-    checkout([
-                    $class           : 'GitSCM',
-                    branches         : [[name: "${branchToCheckout}"]],
-                    extensions       : [[$class: 'UserIdentity', email: "${bitbucket_cred_mail}", name: "${bitbucket_cred_name}"],
-                                        [$class: 'CleanBeforeCheckout'],
-                    userRemoteConfigs: [[credentialsId: "${bitbucket_cred_id}", url: repoUrl]]
-            ])
-}
+

@@ -116,7 +116,7 @@ def updateFiles (sfdxHome, objectType, fileToUpload) {
 
         def status
 
-    	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id > ${status}"
+    	def con = bat (returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id").toString()
 
         echo con
         println status

@@ -101,7 +101,7 @@ def validateFile (org, objectType, importDir){
     }
     }
     else {
-        error ("There is no .csv file.")
+        error ("There is no .csv file in the target directory")
     }
     }
 }

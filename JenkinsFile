@@ -77,19 +77,8 @@ def logoutFromSalesforce(sfdxHome){
 def validateFile (org, objectType){
 
 dir('import') {
-   def files = findFiles() 
- 
-   files.each{ f -> 
-      if(f.directory) {
-        print "This is directory: ${f.name} "
-      }
-   }
- }
-    
-    //def files = findFiles glob: '**/*.csv'
-
-    //println files.toString()
-
+    def files = findFiles glob: '**/*.csv'
+    println files.toString()
 }
 
 def updateFiles (sfdxHome, config, org, objectType) {

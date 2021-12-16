@@ -77,10 +77,10 @@ def logoutFromSalesforce(sfdxHome){
 }
 
 def validateFile (org, objectType){
-def startDir = new File("D:\\Data")
+def startDir = new File("import")
 
 startDir.eachFileRecurse(FILES) {
-    if (it.name.endsWith('.sln')) {
+    if (it.name.endsWith('.csv')) {
         println it
     }
 }

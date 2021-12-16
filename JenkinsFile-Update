@@ -124,13 +124,24 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def updateFiles (sfdxHome, objectType, fileToUpload, username_transla2) {
-    withCredentials([
-        usernamePassword(credentialsId: username_transla2, usernameVariable: 'SF_USER', passwordVariable: 'SF_PASS'),
-    ]) {
+def updateFiles (sfdxHome, objectType, fileToUpload, username_transla2){
         println ("Preparing to upload file: ${fileToUpload}")
-    	def con = sh (returnStatus: true, script: "${sfdxHome}/sfdx force:data:bulk:upsert -s ${objectType} -f data/${fileToUpload} -i Id -u '${SF_USER}' ")
-		def status = sh (returnStatus: true, script: "${sfdxHome}/sfdx force:data:bulk:status -i con")
 
-    }
+    	def updateStatus = bat (script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id --json > update.json", returnStatus: true)
+        println updateStatus
+        if (updateStatus==0){
+        jsonUp = readJSON file: 'update.json' 
+        
+        def usJobId = jsonUp.result.jobId.toString().replace("]", "").replace("[", "")
+        def usBatchId = jsonUp.result.id.toString().replace("]", "").replace("[", "")
+
+        println usJobId
+        println usBatchId
+        
+        def status = bat (returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:status -i ${usJobId} -b ${usBatchId}")
+        println status
+
+        } else {
+            error (jsonUp.message)
+        }
 }

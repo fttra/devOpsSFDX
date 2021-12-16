@@ -80,6 +80,7 @@ dir('import') {
     def files = findFiles glob: '**/*.csv'
     println files.toString()
 }
+}
 
 def updateFiles (sfdxHome, config, org, objectType) {
     	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${objectType}.csv -i Id -u ${config.credentials[org].username}"

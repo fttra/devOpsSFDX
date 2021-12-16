@@ -31,7 +31,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
         authenticateToSalesforce(sfdxHome, config, devHubName)
-        updateFiles(sfdxHome, config, devHubName, fileToUpload)
+        updateFiles(sfdxHome, objectType, devHubName, fileToUpload)
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -100,7 +100,7 @@ dir(importDir) {
     }
 }
 
-def updateFiles (sfdxHome, config, org, fileToUpload) {
+def updateFiles (sfdxHome, objectType, org, fileToUpload) {
         println ("Preparing to upload file: ${fileToUpload}")
     	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id -u ${config.credentials[org].username}"
 		println con

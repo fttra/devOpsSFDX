@@ -72,6 +72,7 @@ def validateFile(org, objectType, importDir){
     dir(importDir) {
     def files = findFiles glob: '**/*.csv'
     def listOfFiles = []
+    if (files.size()>0){
     for (f in files){
         def nameSplited = f.toString().split('_').collect{it as String}
         
@@ -85,7 +86,11 @@ def validateFile(org, objectType, importDir){
     } else if (listOfFiles.size()>1){
          error ("There are too many files with the specified Envrionment and Object Type names.\nList of files that were found:\n" + listOfFiles.toString())
     } else {
-        error ("There is no file with the specified Environment and Object Type names or there is no .csv file.")
+        error ("There is no file with the specified Environment and Object Type names.")
+    }
+    }
+    else {
+        error ("There is no .csv file.")
     }
     }
 }

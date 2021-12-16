@@ -1,6 +1,4 @@
 @Library('Jenkinstools@main') _
-import static groovy.io.FileType.*
-
 node {
     def sfdxHome = tool 'sfdx'
     def devHubName = "${params.Environment}"
@@ -77,10 +75,15 @@ def logoutFromSalesforce(sfdxHome){
 }
 
 def validateFile (org, objectType){
-    def fileList = "ls /import".execute()
-    def files= []
-    fileList.text.eachLine {files.add(it)}
-    println files
+    def list = []
+
+    def dir = new File("${WORKSPACE}/import")
+    dir.eachFileRecurse (FileType.FILES) { file ->
+    list << file
+    }
+
+    println list.toString()
+
 }
 
 def updateFiles (sfdxHome, config, org, objectType) {

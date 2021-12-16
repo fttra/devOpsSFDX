@@ -18,6 +18,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
     }
 
     stage ('Validate file to upload'){
+        checkoutSourceRepository()
         validateFile(devHubName, objectType)
     }
 
@@ -36,8 +37,10 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 }
 }
 
-
-
+def checkoutSourceRepository(){
+   
+checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/fttra/devOpsSFDX.git']]])
+}
 
 def authenticateToSalesforce(sfdxHome, config, org){
     withCredentials([

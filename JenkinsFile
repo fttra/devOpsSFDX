@@ -120,7 +120,7 @@ def updateFiles (sfdxHome, objectType, fileToUpload) {
         println jsonUp.toString()
         
 
-        def jobId = jsonUp.jobId
+        def jobId = jsonUp.result[jobId]
         println jobId
 
 

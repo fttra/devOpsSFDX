@@ -114,12 +114,12 @@ def validateFile (org, objectType, importDir){
 def updateFiles (sfdxHome, objectType, fileToUpload) {
         println ("Preparing to upload file: ${fileToUpload}")
 
-    	def updateStatus = bat (script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id --json > update.json", returnStatus: true)
+    	def updateStatus = bat (script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id --json > update.json", returnStdout: true)
         println updateStatus
-        if (updateStatus==0){
+     //   if (updateStatus==0){
         jsonUp = readJSON file: 'update.json' 
         def usJobId = jsonUp.result.id
         def usBatchId = jsonUp.result.jobId
         println "-i: " + usJobId + " -b: " + usBatchId
-    }
+   // }
 }

@@ -119,8 +119,11 @@ def updateFiles (sfdxHome, objectType, fileToUpload) {
         jsonUp = readJSON file: 'update.json'
         println jsonUp.toString()
         
-        def statusId = jsonUp.[Id]
+
         def jobId = jsonUp.jobId
-        
+        println jobId
+
+
+
     }
 }

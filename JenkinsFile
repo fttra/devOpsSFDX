@@ -20,7 +20,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
     }
 
     stage ('Validate file to upload'){
-        checkoutSourceRepository()
+        checkoutSourceRepository(importDir)
         fileToUpload = validateFile(devHubName, objectType, importDir)
     }
 
@@ -39,9 +39,13 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 }
 }
 
-def checkoutSourceRepository(){
+def checkoutSourceRepository(importDir){
    
-checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/fttra/devOpsSFDX.git']]])
+checkout([  $class:   'GitSCM', 
+            branches:   [[name: '*/main']], 
+            extensions: [['CleanBeforeCheckout'],
+            [$class: 'RelativeTargetDirectory', relativeTargetDir: "${importDir}"]], 
+            userRemoteConfigs: [[url: 'https://github.com/fttra/devOpsSFDX.git']]])
 }
 
 def authenticateToSalesforce(sfdxHome, config, org){

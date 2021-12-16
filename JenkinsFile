@@ -41,11 +41,12 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
 def checkoutSourceRepository(importDir){
    
-checkout([  $class:   'GitSCM', 
+checkout([  
+            $class:   'GitSCM', 
             branches:   [[name: '*/main']], 
-            extensions: [['CleanBeforeCheckout'],
-            [$class: 'RelativeTargetDirectory', relativeTargetDir: "${importDir}"]], 
-            userRemoteConfigs: [[url: 'https://github.com/fttra/devOpsSFDX.git']]])
+            extensions: [['CleanBeforeCheckout']], 
+            userRemoteConfigs: [[url: 'https://github.com/fttra/devOpsSFDX.git']]
+            ])
 }
 
 def authenticateToSalesforce(sfdxHome, config, org){

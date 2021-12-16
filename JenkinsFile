@@ -97,7 +97,7 @@ def validateFile (org, objectType, importDir){
     } else if (listOfFiles.size()>1){
          error ("There are too many files with the specified Envrionment and Object Type names.\nList of files that were found:\n" + listOfFiles.toString())
     } else {
-        error ("There is no file with the specified Environment and'/or Object Type names.")
+        error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + listOfFiles.toString())
     }
     }
     else {

@@ -77,13 +77,10 @@ def logoutFromSalesforce(sfdxHome){
 }
 
 def validateFile (org, objectType){
-def startDir = new File("import")
-
-startDir.eachFileRecurse(FILES) {
-    if (it.name.endsWith('.csv')) {
-        println it
-    }
-}
+    def fileList = "ls import".execute()
+    def files= []
+    fileList.text.eachLine {files.add(it)}
+    println files
 }
 
 def updateFiles (sfdxHome, config, org, objectType) {

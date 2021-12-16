@@ -1,27 +1,21 @@
-@Library('Jenkinstools@master') _
-@Field Boolean settingsLoaded
-
 node {
     def sfdxHome = tool 'sfdx'
     def devHubName = "${params.Environment}"
     def objectType = "${params.Object}"
 
 
-    //credential folder
-
-
-    
     def repoUrl = "https://source.app.pconnect.biz/scm/esdp/esd-pmi-dx.git"
     def bitbucket_cred_id = "ESDBitBucketTechnicalAccess"
     def branchToCheckout = "master"
     def bitbucket_cred_mail = "Filip.Teter@contracted.pmi.com" 
     def bitbucket_cred_name = "fteter@PMINTL.NET"
     
-    def connapp_consumerkey_id = credentials('transla2ConnectedAppInfo')
-    def cred_id = credentials('serverKeyEsdDxSandbox')
-    def username = credentials('transla2ftUsername')
+    def connapp_consumerkey_id = 'transla2ConnectedAppInfo'
+    def cred_id = 'serverKeyEsdDxSandbox'
+    def username_transla2 = 'transla2ftUsername'
+    def server_url = 'https://test.salesforce.com/'
     def environmentList = ["Transla2", "MINT"] as String[]
-
+    
 
 withEnv(["HOME=${env.WORKSPACE}"]){
 
@@ -35,12 +29,12 @@ withEnv(["HOME=${env.WORKSPACE}"]){
     }
 
     stage('Authentication to Salesforce') {
-        authenticateToSalesforce(sfdxHome, username)
+        authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username_transla2, server_url)
 	}
 
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
-        authenticateToSalesforce(sfdxHome, username)
+        authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username_transla2, server_url)
         updateFiles(sfdxHome, objectType)
     }
 	 stage('Logout'){
@@ -64,16 +58,16 @@ try{
                     $class           : 'GitSCM',
                     branches         : [[name: "${branchToCheckout}"]],
                     extensions       : [[$class: 'UserIdentity', email: "${bitbucket_cred_mail}", name: "${bitbucket_cred_name}"],
-                                        [$class: 'CleanBeforeCheckout'],
+                                        [$class: 'CleanBeforeCheckout']],
                     userRemoteConfigs: [[credentialsId: "${bitbucket_cred_id}", url: repoUrl]]
             ])
     print "Successfull checkout to repository. Proceeding ..."
-} else {
-    error ("Unsuccessfull checkout to repository")
+} catch (e){
+    print e
 }
 }
 
-def validateFile(){
+def validateFile(org, objectType){
     if (!fileExists("data/Transla2_users.csv")){
         error ("There is no file to update records or the file has a different name than the object You want to update")
     } else {
@@ -81,14 +75,14 @@ def validateFile(){
     }
 }
 
-def authenticateToSalesforce(sfdxHome){
+def authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username_transla2, server_url){
     withCredentials([
         string(credentialsId: connapp_consumerkey_id, variable: 'CLIENT_ID'),
-        string(credentialsId username, usernameVariable: 'SF_USER')
-        file(credentialsId: cred_id,  variable: 'KEY_FILE'),
+        usernamePassword(credentialsId: username_transla2, usernameVariable: 'SF_USER', passwordVariable: 'SF_PASS'),
+        file(credentialsId: cred_id,  variable: 'KEY_FILE')
     ]) {
         
-        def rc = sh returnStatus: true, script: "${sfdxHome}/sfdx force:auth:jwt:grant  -i ${CLIENT_ID} -u ${SF_USER} -f ${KEY_FILE}  --setdefaultusername"
+        def rc = sh(returnStatus: true, script: "${sfdxHome}/sfdx force:auth:jwt:grant -i '${CLIENT_ID}' -u '${SF_USER}' -f '${KEY_FILE}' -r '${server_url}'")
         if (rc != 0) { error 'Authorization failed' }
 
         println rc
@@ -111,6 +105,6 @@ def logoutFromSalesforce(sfdxHome){
 }
 
 def updateFiles (sfdxHome, objectType) {
-    	def con = sh returnStdout: true, script: "${sfdxHome}/sfdx force:data:bulk:upsert -s Transla2_users.csv -f data/Transla2_users.csv -i Id -u ${username}"
+    	def con = sh returnStdout: true, script: "${sfdxHome}/sfdx force:data:bulk:upsert -s ${objectType} -f data/Transla2_users.csv -i Id -u ${username}"
 		println con
 }

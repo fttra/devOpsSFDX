@@ -88,9 +88,9 @@ dir('import') {
             listOfFiles.add(f)
         }
         }
-    if (listOfFiles.length()==1){
+    if (listOfFiles.size()==1){
        println "Found a file to upload. Proceeding ..."
-    } else if (listOfFiles.length()>1){
+    } else if (listOfFiles.size()>1){
          println "There are to many files with the specified Envrionment and object type name \n + Names of the files: " + listOfFiles.toString()
     } else {
         println "There is no file with the specified Environment and object type names"

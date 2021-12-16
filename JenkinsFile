@@ -81,7 +81,7 @@ dir('import') {
  
    files.each{ f -> 
       if(f.directory) {
-        echo "This is directory: ${f.name} "
+        print "This is directory: ${f.name} "
       }
    }
  }

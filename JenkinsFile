@@ -122,7 +122,7 @@ def updateFiles (sfdxHome, objectType, fileToUpload) {
         def usJobId = jsonUp.result.jobId
         def usBatchId = jsonUp.result.id
         
-        def status = bat (returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:status -i usJobId -b usBatchId")
+        def status = bat (returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:status -i ${usJobId} -b ${usBatchId}")
         println status
 
         } else {

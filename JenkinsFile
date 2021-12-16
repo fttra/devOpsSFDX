@@ -21,7 +21,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
     stage ('Validate file to upload'){
         checkoutSourceRepository()
-        fileToUpload = validateFile(devHubName, objectType)
+        fileToUpload = validateFile(devHubName, objectType, importDir)
     }
 
     stage('Authentication to Salesforce') {

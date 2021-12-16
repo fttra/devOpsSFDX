@@ -77,7 +77,7 @@ def logoutFromSalesforce(sfdxHome){
 }
 
 def validateFile (org, objectType){
-    def fileList = "ls import".execute()
+    def fileList = "ls /import".execute()
     def files= []
     fileList.text.eachLine {files.add(it)}
     println files

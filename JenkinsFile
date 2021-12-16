@@ -81,9 +81,20 @@ def validateFile (org, objectType){
 
 dir('import') {
     def files = findFiles glob: '**/*.csv'
-    println files[0].toString()
-    println files[1].toString()
-}
+    def listOfFiles
+    for (f in files){
+        if (f.toString().contains(org) && f.toString().contains(objectType)){
+            listOfFiles.add(f)
+        }
+        }
+    if (listOfFiles.size()==1){
+       println "Found a file to upload. Proceeding ..."
+    } else if (listOfFiles.size()>1){
+         println "There are to many files with the specified Envrionment and object type name \n + Names of the files: " + listOfFiles.toString()
+    } else {
+        println "There is no file with the specified Environment and object type names"
+    }
+    }
 }
 
 def updateFiles (sfdxHome, config, org, objectType) {

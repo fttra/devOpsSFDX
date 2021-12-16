@@ -2,7 +2,8 @@ node {
     def sfdxHome = tool 'sfdx'
     def devHubName = "${params.Environment}"
     def objectType = "${params.Object}"
-
+    def importDir = 'data'
+    def fileToUpload
 
     def repoUrl = "https://source.app.pconnect.biz/scm/esdp/esd-pmi-dx.git"
     def bitbucket_cred_id = "ESDBitBucketTechnicalAccess"
@@ -25,7 +26,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
     stage ('Validate file to upload'){
         checkoutSourceRepository(repoUrl, bitbucket_cred_id, branchToCheckout, bitbucket_cred_mail, bitbucket_cred_name)
-        validateFile()
+        fileToUpload = validateFile(org, objectType, importDir)
     }
 
     stage('Authentication to Salesforce') {
@@ -35,7 +36,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
         authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username_transla2, server_url)
-        updateFiles(sfdxHome, objectType)
+        updateFiles(sfdxHome, fileToUpload)
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -67,11 +68,23 @@ try{
 }
 }
 
-def validateFile(org, objectType){
-    if (!fileExists("data/Transla2_users.csv")){
-        error ("There is no file to update records or the file has a different name than the object You want to update")
+def String validateFile(org, objectType, importDir){
+    dir(importDir) {
+    def files = findFiles glob: '**/*.csv'
+    def listOfFiles = []
+    for (f in files){
+        if (f.toString().contains(org) && f.toString().contains(objectType)){
+            listOfFiles.add(f.toString())
+        }
+        }
+    if (listOfFiles.size()==1){
+       println "Found a file to upload. File name:\n" + listOfFiles.toString() + "\nProceeding ..."
+       return listOfFiles[0]
+    } else if (listOfFiles.size()>1){
+         error ("There are too many files with the specified Envrionment and Object Type names.\nList of files that were found:\n" + listOfFiles.toString())
     } else {
-        println ("File was found. Proceeding ... ")
+        error ("There is no file with the specified Environment and Object Type names or there is no .csv file.")
+    }
     }
 }
 

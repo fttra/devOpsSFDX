@@ -4,6 +4,8 @@ node {
     def devHubName = "${params.Environment}"
     def sandboxName = env.SANDBOX_NAME
     def objectType = "${params.Object}"
+    def importDir = 'import'
+    def fileToUpload
 
     //credential folder
     def resource = libraryResource resource: 'readFile-config.yml'
@@ -19,7 +21,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
     stage ('Validate file to upload'){
         checkoutSourceRepository()
-        validateFile(devHubName, objectType)
+        fileToUpload = validateFile(devHubName, objectType)
     }
 
     stage('Authentication to Salesforce') {
@@ -29,7 +31,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
         authenticateToSalesforce(sfdxHome, config, devHubName)
-        updateFiles(sfdxHome, config, devHubName, objectType)
+        updateFiles(sfdxHome, config, devHubName, fileToUpload)
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -77,9 +79,9 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def validateFile (org, objectType){
+def validateFile (org, objectType, importDir){
 
-dir('import') {
+dir(importDir) {
     def files = findFiles glob: '**/*.csv'
     def listOfFiles = []
     for (f in files){
@@ -88,16 +90,18 @@ dir('import') {
         }
         }
     if (listOfFiles.size()==1){
-       println "Found a file to upload. Proceeding ..."
+       println "Found a file to upload. File name:\n" + listOfFiles.toString() + "\nProceeding ..."
+        return listOfFiles[0]
     } else if (listOfFiles.size()>1){
-         println "There are to many files with the specified Envrionment and object type name \n + Names of the files: " + listOfFiles.toString()
+         println "There are too many files with the specified Envrionment and Object Type names.\nList of files that were found:\n" + listOfFiles.toString()
     } else {
-        println "There is no file with the specified Environment and object type names"
+        println "There is no file with the specified Environment and Object Type names"
     }
     }
 }
 
-def updateFiles (sfdxHome, config, org, objectType) {
-    	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${objectType}.csv -i Id -u ${config.credentials[org].username}"
+def updateFiles (sfdxHome, config, org, fileToUpload) {
+        println ("Preparing to upload file: ${fileToUpload}")
+    	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id -u ${config.credentials[org].username}"
 		println con
 }

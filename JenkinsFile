@@ -75,9 +75,14 @@ def logoutFromSalesforce(sfdxHome){
 }
 
 def validateFile (org, objectType){
-    def files = findFiles glob: '**/*.csv'
 
-    println files.toString()
+    def dirOutput = bat("dir /B import", returnStdout: true)
+
+    print dirOutput
+    
+    //def files = findFiles glob: '**/*.csv'
+
+    //println files.toString()
 
 }
 

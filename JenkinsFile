@@ -81,7 +81,8 @@ def validateFile (org, objectType){
 
 dir('import') {
     def files = findFiles glob: '**/*.csv'
-    println files.toString()
+    println files[0].toString()
+    println files[1].toString()
 }
 }
 

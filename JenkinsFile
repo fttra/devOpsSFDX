@@ -31,7 +31,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
         authenticateToSalesforce(sfdxHome, config, devHubName)
-        updateFiles(sfdxHome, objectType, devHubName, fileToUpload)
+        updateFiles(sfdxHome, objectType, fileToUpload)
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -80,27 +80,29 @@ def logoutFromSalesforce(sfdxHome){
 }
 
 def validateFile (org, objectType, importDir){
-
-dir(importDir) {
+    dir(importDir) {
     def files = findFiles glob: '**/*.csv'
     def listOfFiles = []
     for (f in files){
-        if (f.toString().contains(org) && f.toString().contains(objectType)){
+        def nameSplited = f.toString().split('_').collect{it as String}
+        println nameSplited[0] + " " + nameSplited[1]
+               
+        if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase())){
             listOfFiles.add(f.toString())
         }
         }
     if (listOfFiles.size()==1){
        println "Found a file to upload. File name:\n" + listOfFiles.toString() + "\nProceeding ..."
-        return listOfFiles[0]
+       return listOfFiles[0]
     } else if (listOfFiles.size()>1){
-         println "There are too many files with the specified Envrionment and Object Type names.\nList of files that were found:\n" + listOfFiles.toString()
+         error ("There are too many files with the specified Envrionment and Object Type names.\nList of files that were found:\n" + listOfFiles.toString())
     } else {
-        println "There is no file with the specified Environment and Object Type names"
+        error ("There is no file with the specified Environment and Object Type names or there is no .csv file.")
     }
     }
 }
 
-def updateFiles (sfdxHome, objectType, org, fileToUpload) {
+def updateFiles (sfdxHome, objectType, fileToUpload) {
         println ("Preparing to upload file: ${fileToUpload}")
     	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id"
 		println con

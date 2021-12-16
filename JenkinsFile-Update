@@ -26,7 +26,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
     stage ('Validate file to upload'){
         checkoutSourceRepository(repoUrl, bitbucket_cred_id, branchToCheckout, bitbucket_cred_mail, bitbucket_cred_name)
-        fileToUpload = validateFile(org, objectType, importDir)
+        fileToUpload = validateFile(devHubName, objectType, importDir)
     }
 
     stage('Authentication to Salesforce') {
@@ -36,7 +36,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
         authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username_transla2, server_url)
-        updateFiles(sfdxHome, fileToUpload)
+        updateFiles(sfdxHome, objectType, fileToUpload, username_transla2)
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -68,12 +68,14 @@ try{
 }
 }
 
-def String validateFile(org, objectType, importDir){
+def validateFile(org, objectType, importDir){
     dir(importDir) {
     def files = findFiles glob: '**/*.csv'
     def listOfFiles = []
     for (f in files){
-        if (f.toString().contains(org) && f.toString().contains(objectType)){
+        def nameSplited = f.toString().split('_').collect{it as String}
+        
+        if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase())){
             listOfFiles.add(f.toString())
         }
         }
@@ -103,7 +105,7 @@ def authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username
 }
 
 def logoutFromSalesforce(sfdxHome){
-    def logoutStatus = sh returnStatus: true, script: "${sfdxHome}/sfdx force:auth:logout -a -p --json > logout.json"
+    def logoutStatus = sh (returnStatus: true, script: "${sfdxHome}/sfdx force:auth:logout -a -p --json > logout.json")
 
     if (logoutStatus!=0){
         jsonOut = readJSON file: 'logout.json'
@@ -117,7 +119,12 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def updateFiles (sfdxHome, objectType) {
-    	def con = sh returnStdout: true, script: "${sfdxHome}/sfdx force:data:bulk:upsert -s ${objectType} -f data/Transla2_users.csv -i Id -u ${username}"
+def updateFiles (sfdxHome, objectType, fileToUpload, username_transla2) {
+    withCredentials([
+        usernamePassword(credentialsId: username_transla2, usernameVariable: 'SF_USER', passwordVariable: 'SF_PASS'),
+    ]) {
+        println ("Preparing to upload file: ${fileToUpload}")
+    	def con = sh (returnStdout: true, script: "${sfdxHome}/sfdx force:data:bulk:upsert -s ${objectType} -f data/${fileToUpload} -i Id -u '${SF_USER}' ")
 		println con
+    }
 }

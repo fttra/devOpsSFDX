@@ -102,6 +102,6 @@ dir(importDir) {
 
 def updateFiles (sfdxHome, objectType, org, fileToUpload) {
         println ("Preparing to upload file: ${fileToUpload}")
-    	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id -u ${config.credentials[org].username}"
+    	def con = bat returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id"
 		println con
 }

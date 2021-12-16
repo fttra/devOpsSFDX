@@ -75,14 +75,9 @@ def logoutFromSalesforce(sfdxHome){
 }
 
 def validateFile (org, objectType){
-    def list = []
+    def files = findFiles glob: '**/*.csv'
 
-    def dir = new File("${WORKSPACE}/import")
-    dir.eachFileRecurse (FileType.FILES) { file ->
-    list << file
-    }
-
-    println list.toString()
+    println files.toString()
 
 }
 

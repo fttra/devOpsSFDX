@@ -113,6 +113,15 @@ def validateFile (org, objectType, importDir){
 
 def updateFiles (sfdxHome, objectType, fileToUpload) {
         println ("Preparing to upload file: ${fileToUpload}")
-    	def con = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id"
-        def status = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:status -i 7507Q000000M6d4QAC -b 7517Q000000LcrVQAS"
+
+        def status
+
+    	def con = bat returnStdout: dupa, script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id > status"
+
+        println status
+        println status
+        println status
+        println status
+        
+        
 }

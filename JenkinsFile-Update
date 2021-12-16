@@ -129,7 +129,8 @@ def updateFiles (sfdxHome, objectType, fileToUpload, username_transla2) {
         usernamePassword(credentialsId: username_transla2, usernameVariable: 'SF_USER', passwordVariable: 'SF_PASS'),
     ]) {
         println ("Preparing to upload file: ${fileToUpload}")
-    	def con = sh (returnStdout: true, script: "${sfdxHome}/sfdx force:data:bulk:upsert -s ${objectType} -f data/${fileToUpload} -i Id -u '${SF_USER}' ")
-		println con
+    	def con = sh (returnStatus: true, script: "${sfdxHome}/sfdx force:data:bulk:upsert -s ${objectType} -f data/${fileToUpload} -i Id -u '${SF_USER}' ")
+		def status = sh (returnStatus: true, script: "${sfdxHome}/sfdx force:data:bulk:status -i con")
+
     }
 }

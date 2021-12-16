@@ -119,8 +119,8 @@ def updateFiles (sfdxHome, objectType, fileToUpload) {
         if (updateStatus==0){
         jsonUp = readJSON file: 'update.json' 
         
-        def usJobId = jsonUp.result.jobId.toString()
-        def usBatchId = jsonUp.result.id.toString()
+        def usJobId = jsonUp.result.jobId.toString().replaceAll('[\[\]]', '')
+        def usBatchId = jsonUp.result.id.toString().replaceAll('[\[\]]', '')
 
         println usJobId
         println usBatchId

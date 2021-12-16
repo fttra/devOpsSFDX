@@ -76,9 +76,15 @@ def logoutFromSalesforce(sfdxHome){
 
 def validateFile (org, objectType){
 
-    def dirOutput = bat("dir /B import", returnStdout: true)
-
-    print dirOutput
+dir('import') {
+   def files = findFiles() 
+ 
+   files.each{ f -> 
+      if(f.directory) {
+        echo "This is directory: ${f.name} "
+      }
+   }
+ }
     
     //def files = findFiles glob: '**/*.csv'
 

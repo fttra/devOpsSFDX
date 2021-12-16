@@ -81,7 +81,7 @@ def validateFile (org, objectType){
 
 dir('import') {
     def files = findFiles glob: '**/*.csv'
-    def listOfFiles = [] as String[]
+    def listOfFiles = []
     for (f in files){
         if (f.toString().contains(org) && f.toString().contains(objectType)){
             listOfFiles.add(f.toString())

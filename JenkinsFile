@@ -91,7 +91,7 @@ def validateFile (org, objPossibleToUp, objectType, importDir){
     def listOfFiles = []
     def filesToUpload = [:]
 
-    if (objectType.toString()='ALL'){    
+    if (objectType.toString().equals('ALL')){    
         for (f in files){
             def nameSplited = f.toString().split('_', 2).collect{it as String}
             for (obj in objPossibleToUp){

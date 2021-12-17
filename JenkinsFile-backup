@@ -88,16 +88,14 @@ def validateFile (org, objectType, importDir){
     dir(importDir) {
     def files = findFiles glob: '**/*.csv'
     def listOfFiles = []
-    
     if (files.size()>0){
     for (f in files){
         def nameSplited = f.toString().split('_', 2).collect{it as String}
         
-        if (!objectType.toLowerCase().contains('all') && nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase())){
+        if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase())){
             listOfFiles.add(f.toString())
         }
         }
-
     if (listOfFiles.size()==1){
        println "Found a file to upload. File name:\n" + listOfFiles.toString() + "\nProceeding ..."
        return listOfFiles[0]

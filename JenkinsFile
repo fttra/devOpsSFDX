@@ -94,6 +94,8 @@ def validateFile (objPossibleToUp, importDir){
         for (f in files){
             def nameSplited = f.toString().split('_', 2).collect{it as String}
             for (obj in objPossibleToUp){
+                println obj
+                println nameSplited[1]
                 if (nameSplited[1].toLowerCase().contains(obj.toLowerCase())) {
                     if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
                         error ("File: " + f + " is not valid as there are two object names in the name of the file")

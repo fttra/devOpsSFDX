@@ -5,7 +5,7 @@ node {
     def sandboxName = env.SANDBOX_NAME
     def objectType = "${params.Object}"
     def importDir = 'import'
-    def fileToUpload
+    def filesToUpload
     def objPossibleToUp = ["Account", "User"] as String[]
 
     //credential folder
@@ -22,7 +22,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
     stage ('Validate file to upload'){
         checkoutSourceRepository()
-        fileToUpload = validateFile(devHubName, objPossibleToUp, objectType, importDir)
+        filesToUpload = validateFile(objPossibleToUp, importDir)
     }
 
     stage('Authentication to Salesforce') {
@@ -32,7 +32,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
         authenticateToSalesforce(sfdxHome, config, devHubName)
-        updateFiles(sfdxHome, objectType, fileToUpload)
+        updateFiles(sfdxHome, objectType, filesToUpload)        
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -85,28 +85,40 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def validateFile (org, objPossibleToUp, objectType, importDir){
+def validateFile (objPossibleToUp, importDir){
     dir(importDir) {
     def files = findFiles glob: '**/*.csv'
-    def listOfFiles = []
     def filesToUpload = [:]
 
-    if (objectType.toString().equals('ALL')){    
+    if (files.size()>0){    
         for (f in files){
             def nameSplited = f.toString().split('_', 2).collect{it as String}
             for (obj in objPossibleToUp){
                 if (nameSplited[1].toLowerCase().contains(obj.toLowerCase())) {
                     if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
                         error ("File: " + f + " is not valid as there are two object names in the name of the file")
-                    } else {
+                    } else {                    
                         filesToUpload.put(f,obj)
                     }
-                } 
+                } else {
+                    error ("Files in the directory don't have an object name in their names")
+                }
             }
         }
         println filesToUpload.toString()
-        return filesToUpload
-    } else {
+        return filesToUpload    
+    }
+    else {
+        error ("There are no .csv files in the chosen directory")
+    }
+    }
+}
+
+def validateFile (org, objPossibleToUp, objectType, importDir){
+    dir(importDir) {
+    def files = findFiles glob: '**/*.csv'
+    def filesToUpload = [:]
+
     if (files.size()>0){
         for (f in files){
             def nameSplited = f.toString().split('_', 2).collect{it as String}
@@ -118,21 +130,24 @@ def validateFile (org, objPossibleToUp, objectType, importDir){
             println "Found a file to upload. File name:\n" + listOfFiles.toString() + "\nProceeding ..."
             return listOfFiles[0]
         } else if (listOfFiles.size()>1){
-            error ("There are too many files with the specified Envrionment and Object Type names.\nList of files that were found:\n" + listOfFiles.toString())
+            error ("Found a files to upload. List of files that were found:\n" + listOfFiles.toString())
         } else {
             error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + listOfFiles.toString())
         }
     } else {
-        error ("There is no .csv file in the target directory")
+        error ("There are no .csv files in the chosen directory")
     }
     }
 }
-}
 
-def updateFiles (sfdxHome, objectType, fileToUpload) {
-        println ("Preparing to upload file: ${fileToUpload}")
 
-    	def updateStatus = bat (script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id --json > update.json", returnStatus: true)
+def updateFiles (sfdxHome, objectType, filesToUpload) {
+    println ("Perapring to upload files.\nList of the files to upload: " + filesToUpload.toString())
+
+    filesToUpload.forEach((k,v) ->    
+        println ("Preparing to upload file: " + k)
+
+    	def updateStatus = bat (script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${v} -f import/${k} -i Id -w 1 --json > update.json", returnStatus: true)
         println updateStatus
         if (updateStatus==0){
         jsonUp = readJSON file: 'update.json' 
@@ -149,4 +164,5 @@ def updateFiles (sfdxHome, objectType, fileToUpload) {
         } else {
             error (jsonUp.message)
         }
+    )
 }

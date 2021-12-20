@@ -105,6 +105,7 @@ def validateFile (org, objPossibleToUp, objectType, importDir){
             }
         }
         println filesToUpload.toString()
+        return filesToUpload
     } else {
     if (files.size()>0){
         for (f in files){

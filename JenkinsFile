@@ -144,7 +144,7 @@ def validateFile (org, objPossibleToUp, objectType, importDir){
 def updateFiles (sfdxHome, objectType, filesToUpload) {
     println ("Perapring to upload files.\nList of the files to upload: " + filesToUpload.toString())
 
-    filesToUpload.forEach((k,v) ->    
+    filesToUpload.forEach { k,v ->    
         println ("Preparing to upload file: " + k)
 
     	def updateStatus = bat (script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${v} -f import/${k} -i Id -w 1 --json > update.json", returnStatus: true)
@@ -164,5 +164,5 @@ def updateFiles (sfdxHome, objectType, filesToUpload) {
         } else {
             error (jsonUp.message)
         }
-    )
+    }
 }

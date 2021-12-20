@@ -22,7 +22,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
     stage ('Validate file to upload'){
         checkoutSourceRepository()
-        filesToUpload = validateFile(objPossibleToUp, importDir)
+        filesToUpload = validateFile(objPossibleToUp, importDir, devHubName, objectType)
     }
 
     stage('Authentication to Salesforce') {
@@ -85,64 +85,38 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def validateFile (objPossibleToUp, importDir, org){
+def validateFile (objPossibleToUp, importDir, org, objectType){
     dir(importDir) {
     def files = findFiles glob: '**/*.csv'
     def filesToUpload = [:]
 
 
-    if (files.size()>0){    
-        for (f in files){
-            def nameSplited = f.toString().split('_', 2).collect{it as String}
-            if (nameSplited[0].toLowerCase().equals(org.toLowerCase())){
-                for (obj in objPossibleToUp){
-                    if (nameSplited[1].toLowerCase().contains(obj.toLowerCase()) && !filesToUpload.containsKey(f)) {
-                        if (objectType.toLowerCase().contains('all')){
-                            filesToUpload = validateFileAll(filesToUpload, f, obj)
-                        } else {
-                            filesToUpload = validateFileSingle()
-                        }
-                    } else {
-                        error ("File: " + f + " is not valid as there are two object names in the name of the file")
-                    } 
-                }
+        if (files.size()>0){
+            if (objectType.toLowerCase().contains('all')){
+                filesToUpload = validateFileAll(org, files, objPossibleToUp, filesToUpload)
+            } else {
+                filesToUpload = validateFileSingle(org, files, objPossibleToUp, filesToUpload, objectType)
             }
+        } else {
+            error ("There are no .csv files in the chosen directory")
         }
-        println filesToUpload.toString()
-        return filesToUpload    
-    }
-    else {
-        error ("There are no .csv files in the chosen directory")
-    }
+
+        if (filesToUpload.size()==1){
+            println "Found a file to upload. File name:\n" + filesToUpload.toString() + "\nProceeding ..."
+            return filesToUpload
+        } else if (filesToUpload.size()>1){
+            println "Found files to upload. List of files that were found:\n" + filesToUpload.toString() + "\nProceeding ..."
+        } else {
+            error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + filesToUpload.toString())
+        }
     }
 }
 
-def validateFileAll (filesToUpload, file, obj){                
-                    if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
-                        error ("File: " + f + " is not valid as there are two object names in the name of the file")
-                    } else {                    
-                        filesToUpload.put(f,obj)
-                    }
-}
-
-def validateFileSingle (nameSplited, file, obj, objectType){
-                    if(nameSplited[1].toLowerCase().contains(objectType.toLowerCase())) {
-                        filesToUpload.put(f,obj)
-                    } else {                    
-                        
-                    }
-}
-
-def validateFile (objPossibleToUp, importDir){
-    dir(importDir) {
-    def files = findFiles glob: '**/*.csv'
-    def filesToUpload = [:]
-
-    if (files.size()>0){    
+def validateFileAll (org, files, objPossibleToUp, filesToUpload){                
         for (f in files){
             def nameSplited = f.toString().split('_', 2).collect{it as String}
             for (obj in objPossibleToUp){
-                if (nameSplited[1].toLowerCase().contains(obj.toLowerCase())) {
+                if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())) {
                     if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
                         error ("File: " + f + " is not valid as there are two object names in the name of the file")
                     } else {                    
@@ -151,39 +125,23 @@ def validateFile (objPossibleToUp, importDir){
                 } 
             }
         }
-        println filesToUpload.toString()
-        return filesToUpload    
-    }
-    else {
-        error ("There are no .csv files in the chosen directory")
-    }
-    }
+        return filesToUpload  
 }
 
-def validateFile (org, objPossibleToUp, objectType, importDir){
-    dir(importDir) {
-    def files = findFiles glob: '**/*.csv'
-    def filesToUpload = [:]
-
-    if (files.size()>0){
+def validateFileSingle (org, files, objPossibleToUp, filesToUpload, objectType){
         for (f in files){
             def nameSplited = f.toString().split('_', 2).collect{it as String}
-            if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase())){
-                listOfFiles.add(f.toString())
+            for (obj in objPossibleToUp){
+                if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())){
+                    if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
+                        error ("File: " + f + " is not valid as there are two object names in the name of the file")
+                    } else {                    
+                        filesToUpload.put(f,obj)
+                    }
+                }
             }
         }
-        if (listOfFiles.size()==1){
-            println "Found a file to upload. File name:\n" + listOfFiles.toString() + "\nProceeding ..."
-            return listOfFiles[0]
-        } else if (listOfFiles.size()>1){
-            error ("Found a files to upload. List of files that were found:\n" + listOfFiles.toString())
-        } else {
-            error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + listOfFiles.toString())
-        }
-    } else {
-        error ("There are no .csv files in the chosen directory")
-    }
-    }
+        return filesToUpload
 }
 
 

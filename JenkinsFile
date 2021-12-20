@@ -106,6 +106,7 @@ def validateFile (objPossibleToUp, importDir, org, objectType){
             return filesToUpload
         } else if (filesToUpload.size()>1){
             println "Found files to upload. List of files that were found:\n" + filesToUpload.toString() + "\nProceeding ..."
+            return filesToUpload
         } else {
             error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + filesToUpload.toString())
         }

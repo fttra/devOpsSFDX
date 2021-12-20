@@ -78,8 +78,6 @@ def authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username
         
         def rc = sh(returnStatus: true, script: "${sfdxHome}/sfdx force:auth:jwt:grant -i '${CLIENT_ID}' -u '${SF_USER}' -f '${KEY_FILE}' -r '${server_url}'")
         if (rc != 0) { error 'Authorization failed' }
-
-        println rc
     } 
 }
 

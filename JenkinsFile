@@ -102,10 +102,14 @@ def validateFile (objPossibleToUp, importDir, org, objectType){
         }
 
         if (filesToUpload.size()==1){
-            println "Found a file to upload. File name:\n" + filesToUpload.toString() + "\nProceeding ..."
+            println "Found a file to upload. File name:"
+            filesToUpload.each{entry -> println entry.key}
+            println "Proceeding ..."
             return filesToUpload
         } else if (filesToUpload.size()>1){
-            println "Found files to upload. List of files that were found:\n" + filesToUpload.toString() + "\nProceeding ..."
+            println "Found a file to upload. File name:"
+            filesToUpload.each{entry -> println entry.key}
+            println "Proceeding ..."
             return filesToUpload
         } else {
             error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + filesToUpload.toString())
@@ -147,7 +151,9 @@ def validateFileSingle (org, files, objPossibleToUp, filesToUpload, objectType){
 
 
 def updateFiles (sfdxHome, objectType, filesToUpload) {
-    println ("Perapring to upload files.\nList of the files to upload: " + filesToUpload.toString())
+    println ("Perapring to upload files.\nList of the files to upload:"
+    filesToUpload.each{entry -> println entry.key}
+    println "Proceeding ..."    
 
     filesToUpload.each { entry ->    
         println ("Preparing to upload file: " + entry.key)

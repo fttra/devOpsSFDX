@@ -58,8 +58,6 @@ def authenticateToSalesforce(sfdxHome, config, org){
         
         def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -i ${CLIENT_ID} -u ${config.credentials[org].username} -f ${KEY_FILE}  --setdefaultusername"
         if (rc != 0) { error 'Authorization failed' }
-
-        println rc
     } 
 }
 
@@ -102,14 +100,10 @@ def validateFile (objPossibleToUp, importDir, org, objectType){
         }
 
         if (filesToUpload.size()==1){
-            println "Found a file to upload. File name:"
-            filesToUpload.each{entry -> println entry.key}
-            println "Proceeding ..."
+            println ("Found a file to upload. File name:" + filesToUpload.keySet() + "\nProceeding ...")
             return filesToUpload
         } else if (filesToUpload.size()>1){
-            println "Found a file to upload. File name:"
-            filesToUpload.each{entry -> println entry.key}
-            println "Proceeding ..."
+            println ("Found files to upload. List of files that were found:" + filesToUpload.keySet() + "\nProceeding ...")
             return filesToUpload
         } else {
             error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + filesToUpload.toString())

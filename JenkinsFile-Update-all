@@ -3,7 +3,8 @@ node {
     def devHubName = "${params.Environment}"
     def objectType = "${params.Object}"
     def importDir = 'data'
-    def fileToUpload
+    def filesToUpload
+    def objPossibleToUp = ["Account", "User"] as String[]
 
     def repoUrl = "https://source.app.pconnect.biz/scm/esdp/esd-pmi-dx.git"
     def bitbucket_cred_id = "ESDBitBucketTechnicalAccess"
@@ -26,7 +27,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 
     stage ('Validate file to upload'){
         checkoutSourceRepository(repoUrl, bitbucket_cred_id, branchToCheckout, bitbucket_cred_mail, bitbucket_cred_name)
-        fileToUpload = validateFile(devHubName, objectType, importDir)
+        filesToUpload = validateFile(objPossibleToUp, importDir, devHubName, objectType)
     }
 
     stage('Authentication to Salesforce') {
@@ -36,7 +37,7 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
         authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username_transla2, server_url)
-        updateFiles(sfdxHome, objectType, fileToUpload, username_transla2)
+        updateFiles(sfdxHome, objectType, filesToUpload, username_transla2)
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -68,33 +69,6 @@ try{
 }
 }
 
-def validateFile(org, objectType, importDir){
-    dir(importDir) {
-    def files = findFiles glob: '**/*.csv'
-    def listOfFiles = []
-    if (files.size()>0){
-    for (f in files){
-        def nameSplited = f.toString().split('_', 2).collect{it as String}
-        
-        if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase())){
-            listOfFiles.add(f.toString())
-        }
-        }
-    if (listOfFiles.size()==1){
-       println "Found a file to upload. File name:\n" + listOfFiles.toString() + "\nProceeding ..."
-       return listOfFiles[0]
-    } else if (listOfFiles.size()>1){
-         error ("There are too many files with the specified Envrionment and Object Type names.\nList of files that were found:\n" + listOfFiles.toString())
-    } else {
-        error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + listOfFiles.toString())
-    }
-    }
-    else {
-        error ("There is no .csv file in the target directory")
-    }
-    }
-}
-
 def authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username_transla2, server_url){
     withCredentials([
         string(credentialsId: connapp_consumerkey_id, variable: 'CLIENT_ID'),
@@ -124,24 +98,87 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def updateFiles (sfdxHome, objectType, fileToUpload, username_transla2){
+def validateFile (objPossibleToUp, importDir, org, objectType){
+    dir(importDir) {
+    def files = findFiles glob: '**/*.csv'
+    def filesToUpload = [:]
+
+
+        if (files.size()>0){
+            if (objectType.toLowerCase().contains('all')){
+                filesToUpload = validateFileAll(org, files, objPossibleToUp, filesToUpload)
+            } else {
+                filesToUpload = validateFileSingle(org, files, objPossibleToUp, filesToUpload, objectType)
+            }
+        } else {
+            error ("There are no .csv files in the chosen directory")
+        }
+
+        if (filesToUpload.size()==1){
+            println "Found a file to upload. File name:\n" + filesToUpload.toString() + "\nProceeding ..."
+            return filesToUpload
+        } else if (filesToUpload.size()>1){
+            println "Found files to upload. List of files that were found:\n" + filesToUpload.toString() + "\nProceeding ..."
+            return filesToUpload
+        } else {
+            error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + filesToUpload.toString())
+        }
+    }
+}
+
+def validateFileAll (org, files, objPossibleToUp, filesToUpload){                
+        for (f in files){
+            def nameSplited = f.toString().split('_', 2).collect{it as String}
+            for (obj in objPossibleToUp){
+                if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())) {
+                    if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
+                        error ("File: " + f + " is not valid as there are two object names in the name of the file")
+                    } else {                    
+                        filesToUpload.put(f,obj)
+                    }
+                } 
+            }
+        }
+        return filesToUpload  
+}
+
+def validateFileSingle (org, files, objPossibleToUp, filesToUpload, objectType){
+        for (f in files){
+            def nameSplited = f.toString().split('_', 2).collect{it as String}
+            for (obj in objPossibleToUp){
+                if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())){
+                    if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
+                        error ("File: " + f + " is not valid as there are two object names in the name of the file")
+                    } else {                    
+                        filesToUpload.put(f,obj)
+                    }
+                }
+            }
+        }
+        return filesToUpload
+}
+
+def updateFiles (sfdxHome, objectType, filesToUpload, username_transla2){
     withCredentials([
         usernamePassword(credentialsId: username_transla2, usernameVariable: 'SF_USER', passwordVariable: 'SF_PASS'),
     ]) {
-        println ("Preparing to upload file: ${fileToUpload}")
-    	def updateStatus = sh (script: "${sfdxHome}/sfdx force:data:bulk:upsert -s ${objectType} -f data/${fileToUpload} -i Id -u '${SF_USER}' --json > update.json", returnStatus: true)        
+        println ("Perapring to upload files.\nList of the files to upload: " + filesToUpload.toString())
 
-        if (updateStatus==0){
-        jsonUp = readJSON file: 'update.json' 
+        filesToUpload.each { entry ->
+            println ("Preparing to upload file: " + entry.key)
+    	    def updateStatus = sh (script: "${sfdxHome}/sfdx force:data:bulk:upsert -s ${entry.value} -f data/${entry.key} -i Id -u '${SF_USER}' --json > update.json", returnStatus: true)        
+
+            if (updateStatus==0){
+                jsonUp = readJSON file: 'update.json' 
         
-        def usJobId = jsonUp.result.jobId.toString().replace("]", "").replace("[", "")
-        def usBatchId = jsonUp.result.id.toString().replace("]", "").replace("[", "")
+                def usJobId = jsonUp.result.jobId.toString().replace("]", "").replace("[", "")
+                def usBatchId = jsonUp.result.id.toString().replace("]", "").replace("[", "")
 
-        def status = sh (returnStdout: true, script: "${sfdxHome}/sfdx force:data:bulk:status -i ${usJobId} -b ${usBatchId} -u '${SF_USER}'")
-        println status
-        }
-        else {
-           error (jsonUp.message) 
+                def status = sh (returnStdout: true, script: "${sfdxHome}/sfdx force:data:bulk:status -i ${usJobId} -b ${usBatchId} -u '${SF_USER}'")
+                println status
+            } else {
+                error (jsonUp.message) 
+            }
         }
     }
 }

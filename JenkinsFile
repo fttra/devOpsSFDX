@@ -151,7 +151,7 @@ def validateFileSingle (org, files, objPossibleToUp, filesToUpload, objectType){
 
 
 def updateFiles (sfdxHome, objectType, filesToUpload) {
-    println ("Perapring to upload files.\nList of the files to upload:"
+    println ("Perapring to upload files.\nList of the files to upload:")
     filesToUpload.each { entry -> println entry.key }
     println "Proceeding ..."    
 

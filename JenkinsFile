@@ -98,15 +98,34 @@ def validateFile (org, objPossibleToUp, objectType, importDir){
                 if (nameSplited[1].toLowerCase().contains(obj.toLowerCase()){
                     if(filesToUpload.size()>0 && filesToUpload.containsKey(f){
                         error ("File: " + f + " is not valid as there are two object names in the name of the file")
-                    } else {
-                    filesToUpload.put(f,obj)
-                    }
+                    } else filesToUpload.put(f,obj)
+                } else {
+                    error ("dupa")
                 }
             }
         }
         println filesToUpload.toString()
         return filesToUpload
-    } 
+    } else {
+    if (files.size()>0){
+        for (f in files){
+            def nameSplited = f.toString().split('_', 2).collect{it as String}
+            if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase())){
+                listOfFiles.add(f.toString())
+            }
+        }
+        if (listOfFiles.size()==1){
+            println "Found a file to upload. File name:\n" + listOfFiles.toString() + "\nProceeding ..."
+            return listOfFiles[0]
+        } else if (listOfFiles.size()>1){
+            error ("There are too many files with the specified Envrionment and Object Type names.\nList of files that were found:\n" + listOfFiles.toString())
+        } else {
+            error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + listOfFiles.toString())
+        }
+    } else {
+        error ("There is no .csv file in the target directory")
+    }
+    }
 }
 }
 

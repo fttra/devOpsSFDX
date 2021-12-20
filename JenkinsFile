@@ -85,6 +85,54 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
+def validateFile (objPossibleToUp, importDir, org){
+    dir(importDir) {
+    def files = findFiles glob: '**/*.csv'
+    def filesToUpload = [:]
+
+
+    if (files.size()>0){    
+        for (f in files){
+            def nameSplited = f.toString().split('_', 2).collect{it as String}
+            if (nameSplited[0].toLowerCase().equals(org.toLowerCase())){
+                for (obj in objPossibleToUp){
+                    if (nameSplited[1].toLowerCase().contains(obj.toLowerCase()) && !filesToUpload.containsKey(f)) {
+                        if (objectType.toLowerCase().contains('all')){
+                            filesToUpload = validateFileAll(filesToUpload, f, obj)
+                        } else {
+                            filesToUpload = validateFileSingle()
+                        }
+                    } else {
+                        error ("File: " + f + " is not valid as there are two object names in the name of the file")
+                    } 
+                }
+            }
+        }
+        println filesToUpload.toString()
+        return filesToUpload    
+    }
+    else {
+        error ("There are no .csv files in the chosen directory")
+    }
+    }
+}
+
+def validateFileAll (filesToUpload, file, obj){                
+                    if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
+                        error ("File: " + f + " is not valid as there are two object names in the name of the file")
+                    } else {                    
+                        filesToUpload.put(f,obj)
+                    }
+}
+
+def validateFileSingle (nameSplited, file, obj, objectType){
+                    if(nameSplited[1].toLowerCase().contains(objectType.toLowerCase())) {
+                        filesToUpload.put(f,obj)
+                    } else {                    
+                        
+                    }
+}
+
 def validateFile (objPossibleToUp, importDir){
     dir(importDir) {
     def files = findFiles glob: '**/*.csv'

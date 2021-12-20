@@ -98,9 +98,7 @@ def validateFile (org, objPossibleToUp, objectType, importDir){
                 if (nameSplited[1].toLowerCase().contains(obj.toLowerCase()) {
                     if(filesToUpload.size()>0 && filesToUpload.containsKey(f) {
                         error ("File: " + f + " is not valid as there are two object names in the name of the file")
-                    } else {
-                        filesToUpload.put(f,obj)
-                    }
+                    } else filesToUpload.put(f,obj)
                 } 
             }
         }

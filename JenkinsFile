@@ -10,8 +10,8 @@ node {
     println(resource)
     def config = readYaml text: resource
     
-    def importDir = config.core_properties[bitbucket_parameters].import_directory
-    def objPossibleToUp = config.core_properties[bitbucket_parameters].objects_possible_to_upload.split(',').collect{it as String}
+    def importDir = config.core_properties.bitbucket_parameters.import_directory
+    def objPossibleToUp = config.core_properties.bitbucket_parameters.objects_possible_to_upload.split(',').collect{it as String}
 
     println importDir
     println objPossibleToUp.toString()   

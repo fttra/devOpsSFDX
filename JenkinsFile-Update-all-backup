@@ -2,17 +2,9 @@ node {
     def sfdxHome = tool 'sfdx'
     def devHubName = "${params.Environment}"
     def objectType = "${params.Object}"
+    def importDir = 'data'
     def filesToUpload
-
-    def resource = libraryResource resource: 'readFile-config.yml'
-    println(resource)
-    def config = readYaml text: resource
-
-    def importDir = config.core_properties[bitbucket_parameters].import_directory
-    def objPossibleToUp = config.core_properties[bitbucket_parameters].objects_possible_to_upload.split(',').collect{it as String}
-
-    println importDir
-    println objPossibleToUp.toString()
+    def objPossibleToUp = ["Account", "User"] as String[]
 
     def repoUrl = "https://source.app.pconnect.biz/scm/esdp/esd-pmi-dx.git"
     def bitbucket_cred_id = "ESDBitBucketTechnicalAccess"

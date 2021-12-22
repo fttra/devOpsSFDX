@@ -1,12 +1,14 @@
 core_properties:
   bitbucket_parameters:
+    import_directory: "data"
+    objects_possible_to_upload: "Account,User"
+
     bitbucket_cred_mail: "Filip.Teter@contracted.pmi.com"
     bitbucket_cred_name: "fteter@PMINTL.NET"
     bitbucket_cred_id: "ESDBitBucketTechnicalAccess"
 
 
     bitbucket_protocol: "https"
-    #    TO VERIFY IF WE NEED BASE AND BASE_URL SEPARATELY
     bitbucket_base: "source.app.pconnect.biz"
     bitbucket_base_url: "https://source.app.pconnect.biz"
     bitbucket_base_api_url: "https://source.app.pconnect.biz/rest/api/1.0/projects"

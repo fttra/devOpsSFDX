@@ -1,51 +1,36 @@
+@Library('Jenkinstools@master') _
 node {
     def sfdxHome = tool 'sfdx'
     def devHubName = "${params.Environment}"
     def objectType = "${params.Object}"
     def filesToUpload
 
-    def resource = libraryResource resource: 'readFile-config.yml'
-    println(resource)
+    def resource = libraryResource resource: 'updateData-config.yml'
     def config = readYaml text: resource
 
-    def importDir = config.core_properties[bitbucket_parameters].import_directory
-    def objPossibleToUp = config.core_properties[bitbucket_parameters].objects_possible_to_upload.split(',').collect{it as String}
-
-    println importDir
-    println objPossibleToUp.toString()
-
-    def repoUrl = "https://source.app.pconnect.biz/scm/esdp/esd-pmi-dx.git"
-    def bitbucket_cred_id = "ESDBitBucketTechnicalAccess"
-    def branchToCheckout = "master"
-    def bitbucket_cred_mail = "Filip.Teter@contracted.pmi.com" 
-    def bitbucket_cred_name = "fteter@PMINTL.NET"
-    
-    def connapp_consumerkey_id = 'transla2ConnectedAppInfo'
-    def cred_id = 'serverKeyEsdDxSandbox'
-    def username_transla2 = 'transla2ftUsername'
-    def server_url = 'https://test.salesforce.com/'
-    def environmentList = ["Transla2", "MINT"] as String[]
-    
+    def importDir = config.core_properties.bitbucket_parameters.bitbucket_import_dir
+    def objPossibleToUp = config.core_properties.salesforce_parameters.objects_possible_to_upload.split(',').collect{it as String}
+   
 
 withEnv(["HOME=${env.WORKSPACE}"]){
 
     stage ('Validate environment'){
-        validateEnvironment(environmentList, devHubName)
+        validateEnvironment(config, devHubName)
     }
 
     stage ('Validate file to upload'){
-        checkoutSourceRepository(repoUrl, bitbucket_cred_id, branchToCheckout, bitbucket_cred_mail, bitbucket_cred_name)
+        checkoutSourceRepository(config)
         filesToUpload = validateFile(objPossibleToUp, importDir, devHubName, objectType)
     }
 
     stage('Authentication to Salesforce') {
-        authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username_transla2, server_url)
+        authenticateToSalesforce(sfdxHome, config, org)
 	}
 
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
-        authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username_transla2, server_url)
-        updateFiles(sfdxHome, objectType, filesToUpload, username_transla2)
+        authenticateToSalesforce(sfdxHome, config, org)
+        updateFiles(sfdxHome, objectType, filesToUpload, config, org)
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -53,23 +38,23 @@ withEnv(["HOME=${env.WORKSPACE}"]){
 }
 }
 
-def validateEnvironment (environmentList, org){
-    if(environmentList.contains(org) == null){
+def validateEnvironment (config, org){
+    if(config.credentials[org] == null){
         error ("There is no environment with the name: " + org)
     } else {
-    print "Validation successful. Proceeding ..."
+    print "Validation of the environment successful. Proceeding ..."
     }
 }
 
-def checkoutSourceRepository(repoUrl, bitbucket_cred_id, branchToCheckout, bitbucket_cred_mail, bitbucket_cred_name){
+def checkoutSourceRepository(config){
    
 try{
     checkout([
                     $class           : 'GitSCM',
-                    branches         : [[name: "${branchToCheckout}"]],
-                    extensions       : [[$class: 'UserIdentity', email: "${bitbucket_cred_mail}", name: "${bitbucket_cred_name}"],
+                    branches         : [[name: "master"]],
+                    extensions       : [[$class: 'UserIdentity', email: "${config.core_properties.bitbucket_parameters.bitbucket_cred_mail}", name: "${config.core_properties.bitbucket_parameters.bitbucket_cred_name}"],
                                         [$class: 'CleanBeforeCheckout']],
-                    userRemoteConfigs: [[credentialsId: "${bitbucket_cred_id}", url: repoUrl]]
+                    userRemoteConfigs: [[credentialsId: "${config.core_properties.bitbucket_parameters.bitbucket_cred_id}", url: "${config.core_properties.bitbucket_parameters.bitbucket_src_rep}"]]
             ])
     print "Successfull checkout to repository. Proceeding ..."
 } catch (e){
@@ -77,14 +62,14 @@ try{
 }
 }
 
-def authenticateToSalesforce(sfdxHome, connapp_consumerkey_id, cred_id, username_transla2, server_url){
+def authenticateToSalesforce(sfdxHome, config, org){
     withCredentials([
-        string(credentialsId: connapp_consumerkey_id, variable: 'CLIENT_ID'),
-        usernamePassword(credentialsId: username_transla2, usernameVariable: 'SF_USER', passwordVariable: 'SF_PASS'),
-        file(credentialsId: cred_id,  variable: 'KEY_FILE')
+        string(credentialsId: config.credentials[org].connapp_consumerkey_id, variable: 'CLIENT_ID'),
+        usernamePassword(credentialsId: config.credentials[org].username, usernameVariable: 'SF_USER', passwordVariable: 'SF_PASS'),
+        file(credentialsId: config.credentials[org].cred_id,  variable: 'KEY_FILE')
     ]) {
         
-        def rc = sh(returnStatus: true, script: "${sfdxHome}/sfdx force:auth:jwt:grant -i '${CLIENT_ID}' -u '${SF_USER}' -f '${KEY_FILE}' -r '${server_url}'")
+        def rc = sh(returnStatus: true, script: "${sfdxHome}/sfdx force:auth:jwt:grant -i '${CLIENT_ID}' -u '${SF_USER}' -f '${KEY_FILE}' -r '${config.credentials[org].server_url}'")
         if (rc != 0) { error 'Authorization failed' }
     } 
 }
@@ -164,9 +149,9 @@ def validateFileSingle (org, files, objPossibleToUp, filesToUpload, objectType){
         return filesToUpload
 }
 
-def updateFiles (sfdxHome, objectType, filesToUpload, username_transla2){
+def updateFiles (sfdxHome, objectType, filesToUpload, config, org){
     withCredentials([
-        usernamePassword(credentialsId: username_transla2, usernameVariable: 'SF_USER', passwordVariable: 'SF_PASS'),
+        usernamePassword(credentialsId: config.credentials[org].username, usernameVariable: 'SF_USER', passwordVariable: 'SF_PASS'),
     ]) {
         println ("Perapring to upload files.\nList of the files to upload:\n" + filesToUpload.keySet() + "\nProceeding ...")
 

@@ -5,7 +5,7 @@ node {
     def filesToUpload
 
     //credential folder
-    def config = readYaml text: 'readFile-config.yml'
+    def config = readYaml file: 'readFile-config.yml'
     
     def importDir = config.core_properties.bitbucket_parameters.import_directory
     def objPossibleToUp = config.core_properties.bitbucket_parameters.objects_possible_to_upload.split(',').collect{it as String}

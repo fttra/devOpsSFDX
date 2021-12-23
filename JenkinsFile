@@ -1,4 +1,3 @@
-@Library('Jenkinstools@main') _
 node {
     def sfdxHome = tool 'sfdx'
     def devHubName = "${params.Environment}"
@@ -6,9 +5,7 @@ node {
     def filesToUpload
 
     //credential folder
-    def resource = libraryResource resource: 'readFile-config.yml'
-    println(resource)
-    def config = readYaml text: resource
+    def config = readYaml text: 'readFile-config.yml'
     
     def importDir = config.core_properties.bitbucket_parameters.import_directory
     def objPossibleToUp = config.core_properties.bitbucket_parameters.objects_possible_to_upload.split(',').collect{it as String}

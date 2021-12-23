@@ -13,8 +13,3 @@ credentials:
     username: "transla2ftUsername"
     connapp_consumerkey_id: "transla2ConnectedAppInfo"
     cred_id: "serverKeyEsdDxSandbox"
-  Env2:
-    server_url: "https://test.salesforce.com"
-    username: "transla2ftUsername"
-    connapp_consumerkey_id: "transla2ConnectedAppInfo"
-    cred_id: "serverKeyEsdDxSandbox"

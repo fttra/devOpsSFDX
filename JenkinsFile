@@ -83,12 +83,22 @@ def validateFile (objPossibleToUp, importDir, org, objectType){
     def files = findFiles glob: '**/*.csv'
     def filesToUpload = [:]
 
-
         if (files.size()>0){
-            if (objectType.toLowerCase().contains('all')){
-                filesToUpload = validateFileAll(org, files, objPossibleToUp, filesToUpload)
-            } else {
-                filesToUpload = validateFileSingle(org, files, objPossibleToUp, filesToUpload, objectType)
+            for (f in files){
+                if (!filesToUpload.containsKey(f)){
+                    def nameSplited = f.toString().split('_', 2).collect{it as String}
+                    for (obj in objPossibleToUp){
+                        if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())){
+                            if (objectType.toLowerCase().contains('all')){
+                                filesToUpload.put(f,obj)
+                            } else if (nameSplited[1].toLowerCase().contains(objectType.toLowerCase()){
+                                filesToUpload.put(f,obj)
+                            }
+                        }
+                    }
+                } else {
+                    error ("File: " + f + " is not valid as there are two object names in the name of the file")
+                }
             }
         } else {
             error ("There are no .csv files in the chosen directory")
@@ -105,39 +115,6 @@ def validateFile (objPossibleToUp, importDir, org, objectType){
         }
     }
 }
-
-def validateFileAll (org, files, objPossibleToUp, filesToUpload){                
-        for (f in files){
-            def nameSplited = f.toString().split('_', 2).collect{it as String}
-            for (obj in objPossibleToUp){
-                if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())) {
-                    if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
-                        error ("File: " + f + " is not valid as there are two object names in the name of the file")
-                    } else {                    
-                        filesToUpload.put(f,obj)
-                    }
-                } 
-            }
-        }
-        return filesToUpload  
-}
-
-def validateFileSingle (org, files, objPossibleToUp, filesToUpload, objectType){
-        for (f in files){
-            def nameSplited = f.toString().split('_', 2).collect{it as String}
-            for (obj in objPossibleToUp){
-                if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())){
-                    if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
-                        error ("File: " + f + " is not valid as there are two object names in the name of the file")
-                    } else {                    
-                        filesToUpload.put(f,obj)
-                    }
-                }
-            }
-        }
-        return filesToUpload
-}
-
 
 def updateFiles (sfdxHome, objectType, filesToUpload) {
     println ("Perapring to upload files.\nList of the files to upload:\n" + filesToUpload.keySet() + "\nProceeding ...")

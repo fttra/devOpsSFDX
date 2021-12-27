@@ -13,18 +13,18 @@ node {
 
 withEnv(["HOME=${env.WORKSPACE}"]){
     stage ('Validate environment'){
-        validateEnvironment(config, ${params.Environment})
+        validateEnvironment(config, "${params.Environment}")
     }
 
     stage ('Validate file to upload'){
         checkoutSourceRepository()
-        filesToUpload = validateFile(objPossibleToUp, importDir, ${params.Environment}, ${params.Object})
+        filesToUpload = validateFile(objPossibleToUp, importDir, "${params.Environment}", "${params.Object}")
     }
 
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
-        authenticateToSalesforce(sfdxHome, config, ${params.Environment})
-        updateFiles(sfdxHome, ${params.Object}, filesToUpload)        
+        authenticateToSalesforce(sfdxHome, config, "${params.Environment}")
+        updateFiles(sfdxHome, "${params.Object}", filesToUpload)        
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)

@@ -13,18 +13,18 @@ node {
 
 withEnv(["HOME=${env.WORKSPACE}"]){
     stage ('Validate environment'){
-        validateEnvironment(config, params.Environment)
+        validateEnvironment(config, ${params.Environment})
     }
 
     stage ('Validate file to upload'){
         checkoutSourceRepository()
-        filesToUpload = validateFile(objPossibleToUp, importDir, params.Environment, params.Object)
+        filesToUpload = validateFile(objPossibleToUp, importDir, ${params.Environment}, ${params.Object})
     }
 
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
-        authenticateToSalesforce(sfdxHome, config, params.Environment)
-        updateFiles(sfdxHome, params.Object, filesToUpload)        
+        authenticateToSalesforce(sfdxHome, config, ${params.Environment})
+        updateFiles(sfdxHome, ${params.Object}, filesToUpload)        
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -78,17 +78,17 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def validateFile (objPossibleToUp, importDir, org, params.Object){
+def validateFile (objPossibleToUp, importDir, org, objectType){
     dir(importDir) {
     def files = findFiles glob: '**/*.csv'
     def filesToUpload = [:]
 
 
         if (files.size()>0){
-            if (params.Object.toLowerCase().contains('all')){
+            if (objectType.toLowerCase().contains('all')){
                 filesToUpload = validateFileAll(org, files, objPossibleToUp, filesToUpload)
             } else {
-                filesToUpload = validateFileSingle(org, files, objPossibleToUp, filesToUpload, params.Object)
+                filesToUpload = validateFileSingle(org, files, objPossibleToUp, filesToUpload, objectType)
             }
         } else {
             error ("There are no .csv files in the chosen directory")
@@ -122,11 +122,11 @@ def validateFileAll (org, files, objPossibleToUp, filesToUpload){
         return filesToUpload  
 }
 
-def validateFileSingle (org, files, objPossibleToUp, filesToUpload, params.Object){
+def validateFileSingle (org, files, objPossibleToUp, filesToUpload, objectType){
         for (f in files){
             def nameSplited = f.toString().split('_', 2).collect{it as String}
             for (obj in objPossibleToUp){
-                if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(params.Object.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())){
+                if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())){
                     if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
                         error ("File: " + f + " is not valid as there are two object names in the name of the file")
                     } else {                    
@@ -139,7 +139,7 @@ def validateFileSingle (org, files, objPossibleToUp, filesToUpload, params.Objec
 }
 
 
-def updateFiles (sfdxHome, params.Object, filesToUpload) {
+def updateFiles (sfdxHome, objectType, filesToUpload) {
     println ("Perapring to upload files.\nList of the files to upload:\n" + filesToUpload.keySet() + "\nProceeding ...")
 
     filesToUpload.each { entry ->    

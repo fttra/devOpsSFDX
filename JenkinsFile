@@ -152,8 +152,8 @@ def updateFiles (sfdxHome, objectType, filesToUpload) {
         }
 }
 
-def statusCheck (updateStatus)) {
-    if (updateStatus==0){
+def statusCheck (status)) {
+    if (status==0){
         jsonUp = readJSON file: 'update.json' 
         
         def usJobId = jsonUp.result.jobId.toString().replace("]", "").replace("[", "")

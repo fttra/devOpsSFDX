@@ -1,11 +1,9 @@
 node {
     def sfdxHome = tool 'sfdx'
-    def devHubName = "${params.Environment}"
-    def objectType = "${params.Object}"
     def filesToUpload
 
     //credential folder
-    def config = readYaml file: 'readFile-config.yml'
+    def config = readYaml file: 'yaml/readFile-config.yml'
     
     def importDir = config.core_properties.bitbucket_parameters.import_directory
     def objPossibleToUp = config.core_properties.bitbucket_parameters.objects_possible_to_upload.split(',').collect{it as String}
@@ -15,22 +13,18 @@ node {
 
 withEnv(["HOME=${env.WORKSPACE}"]){
     stage ('Validate environment'){
-        validateEnvironment(config, devHubName)
+        validateEnvironment(config, params.Environment)
     }
 
     stage ('Validate file to upload'){
         checkoutSourceRepository()
-        filesToUpload = validateFile(objPossibleToUp, importDir, devHubName, objectType)
+        filesToUpload = validateFile(objPossibleToUp, importDir, params.Environment, params.Object)
     }
-
-    stage('Authentication to Salesforce') {
-        authenticateToSalesforce(sfdxHome, config, devHubName)
-	}
 
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
-        authenticateToSalesforce(sfdxHome, config, devHubName)
-        updateFiles(sfdxHome, objectType, filesToUpload)        
+        authenticateToSalesforce(sfdxHome, config, params.Environment)
+        updateFiles(sfdxHome, params.Object, filesToUpload)        
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -55,7 +49,10 @@ def authenticateToSalesforce(sfdxHome, config, org){
     ]) {
         
         def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -i ${CLIENT_ID} -u ${config.credentials[org].username} -f ${KEY_FILE}  --setdefaultusername"
-        if (rc != 0) { error 'Authorization failed' }
+        if (rc != 0) { 
+            println rc
+            error 'Authorization failed' 
+            }
     } 
 }
 
@@ -81,17 +78,17 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def validateFile (objPossibleToUp, importDir, org, objectType){
+def validateFile (objPossibleToUp, importDir, org, params.Object){
     dir(importDir) {
     def files = findFiles glob: '**/*.csv'
     def filesToUpload = [:]
 
 
         if (files.size()>0){
-            if (objectType.toLowerCase().contains('all')){
+            if (params.Object.toLowerCase().contains('all')){
                 filesToUpload = validateFileAll(org, files, objPossibleToUp, filesToUpload)
             } else {
-                filesToUpload = validateFileSingle(org, files, objPossibleToUp, filesToUpload, objectType)
+                filesToUpload = validateFileSingle(org, files, objPossibleToUp, filesToUpload, params.Object)
             }
         } else {
             error ("There are no .csv files in the chosen directory")
@@ -125,11 +122,11 @@ def validateFileAll (org, files, objPossibleToUp, filesToUpload){
         return filesToUpload  
 }
 
-def validateFileSingle (org, files, objPossibleToUp, filesToUpload, objectType){
+def validateFileSingle (org, files, objPossibleToUp, filesToUpload, params.Object){
         for (f in files){
             def nameSplited = f.toString().split('_', 2).collect{it as String}
             for (obj in objPossibleToUp){
-                if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())){
+                if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(params.Object.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())){
                     if(filesToUpload.size()>0 && filesToUpload.containsKey(f)) {
                         error ("File: " + f + " is not valid as there are two object names in the name of the file")
                     } else {                    
@@ -142,7 +139,7 @@ def validateFileSingle (org, files, objPossibleToUp, filesToUpload, objectType){
 }
 
 
-def updateFiles (sfdxHome, objectType, filesToUpload) {
+def updateFiles (sfdxHome, params.Object, filesToUpload) {
     println ("Perapring to upload files.\nList of the files to upload:\n" + filesToUpload.keySet() + "\nProceeding ...")
 
     filesToUpload.each { entry ->    

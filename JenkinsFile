@@ -91,7 +91,7 @@ def validateFile (objPossibleToUp, importDir, org, objectType){
                         if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())){
                             if (objectType.toLowerCase().contains('all')){
                                 filesToUpload.put(f,obj)
-                            } else if (nameSplited[1].toLowerCase().contains(objectType.toLowerCase()){
+                            } else if (nameSplited[1].toLowerCase().contains(objectType.toLowerCase())){
                                 filesToUpload.put(f,obj)
                             }
                         }

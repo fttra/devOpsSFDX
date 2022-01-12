@@ -1,37 +1,30 @@
-@Library('Jenkinstools@main') _
 node {
     def sfdxHome = tool 'sfdx'
-    def devHubName = "${params.Environment}"
-    def sandboxName = env.SANDBOX_NAME
-    def objectType = "${params.Object}"
-    def importDir = 'import'
-    def fileToUpload
+    def filesToUpload
 
     //credential folder
-    def resource = libraryResource resource: 'readFile-config.yml'
-    println(resource)
-    def config = readYaml text: resource
+    def config = readYaml file: 'yaml/readFile-config.yml'
     
+    def importDir = config.core_properties.bitbucket_parameters.import_directory
+    def objPossibleToUp = config.core_properties.bitbucket_parameters.objects_possible_to_upload.split(',').collect{it as String}
 
+    println importDir
+    println objPossibleToUp.toString()   
 
 withEnv(["HOME=${env.WORKSPACE}"]){
     stage ('Validate environment'){
-        validateEnvironment(config, devHubName)
+        validateEnvironment(config, "${params.Environment}")
     }
 
     stage ('Validate file to upload'){
         checkoutSourceRepository()
-        fileToUpload = validateFile(devHubName, objectType, importDir)
+        filesToUpload = validateFile(objPossibleToUp, importDir, "${params.Environment}", "${params.Object}")
     }
-
-    stage('Authentication to Salesforce') {
-        authenticateToSalesforce(sfdxHome, config, devHubName)
-	}
 
 	stage('Update file'){
         logoutFromSalesforce(sfdxHome)
-        authenticateToSalesforce(sfdxHome, config, devHubName)
-        updateFiles(sfdxHome, objectType, fileToUpload)
+        authenticateToSalesforce(sfdxHome, config, "${params.Environment}")
+        updateFiles(sfdxHome, "${params.Object}", filesToUpload)        
     }
 	 stage('Logout'){
 	 	logoutFromSalesforce(sfdxHome)
@@ -56,9 +49,10 @@ def authenticateToSalesforce(sfdxHome, config, org){
     ]) {
         
         def rc = bat returnStatus: true, script: "\"${sfdxHome}/sfdx\" force:auth:jwt:grant  -i ${CLIENT_ID} -u ${config.credentials[org].username} -f ${KEY_FILE}  --setdefaultusername"
-        if (rc != 0) { error 'Authorization failed' }
-
-        println rc
+        if (rc != 0) { 
+            println rc
+            error 'Authorization failed' 
+            }
     } 
 }
 
@@ -84,51 +78,67 @@ def logoutFromSalesforce(sfdxHome){
 	println "Successfully logout from Salesforce"
 }
 
-def validateFile (org, objectType, importDir){
+def validateFile (objPossibleToUp, importDir, org, objectType){
     dir(importDir) {
     def files = findFiles glob: '**/*.csv'
-    def listOfFiles = []
-    if (files.size()>0){
-    for (f in files){
-        def nameSplited = f.toString().split('_', 2).collect{it as String}
-        
-        if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(objectType.toLowerCase())){
-            listOfFiles.add(f.toString())
+    def filesToUpload = [:]
+
+        if (files.size()>0){
+            for (f in files){
+                if (!filesToUpload.containsKey(f)){
+                    def nameSplited = f.toString().split('_', 2).collect{it as String}
+                    for (obj in objPossibleToUp){
+                        if (nameSplited[0].toLowerCase().equals(org.toLowerCase()) && nameSplited[1].toLowerCase().contains(obj.toLowerCase())){
+                            if (objectType.toLowerCase().contains('all')){
+                                filesToUpload.put(f,obj)
+                            } else if (nameSplited[1].toLowerCase().contains(objectType.toLowerCase())){
+                                filesToUpload.put(f,obj)
+                            }
+                        }
+                    }
+                } else {
+                    error ("File: " + f + " is not valid as there are two object names in the name of the file")
+                }
+            }
+        } else {
+            error ("There are no .csv files in the chosen directory")
         }
+
+        if (filesToUpload.size()==1){
+            println ("Found a file to upload. File name:\n" + filesToUpload.keySet() + "\nProceeding ...")
+            return filesToUpload
+        } else if (filesToUpload.size()>1){
+            println ("Found files to upload. List of files that were found:\n" + filesToUpload.keySet() + "\nProceeding ...")
+            return filesToUpload
+        } else {
+            error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + filesToUpload.toString())
         }
-    if (listOfFiles.size()==1){
-       println "Found a file to upload. File name:\n" + listOfFiles.toString() + "\nProceeding ..."
-       return listOfFiles[0]
-    } else if (listOfFiles.size()>1){
-         error ("There are too many files with the specified Envrionment and Object Type names.\nList of files that were found:\n" + listOfFiles.toString())
-    } else {
-        error ("There is no file with the specified Environment and/or Object Type names.\nList of the files in the target directory:\n" + listOfFiles.toString())
-    }
-    }
-    else {
-        error ("There is no .csv file in the target directory")
-    }
     }
 }
 
-def updateFiles (sfdxHome, objectType, fileToUpload) {
-        println ("Preparing to upload file: ${fileToUpload}")
+def updateFiles (sfdxHome, objectType, filesToUpload) {
+    println ("Perapring to upload files.\nList of the files to upload:\n" + filesToUpload.keySet() + "\nProceeding ...")
 
-    	def updateStatus = bat (script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${objectType} -f import/${fileToUpload} -i Id --json > update.json", returnStatus: true)
+    filesToUpload.each { entry ->    
+        println ("Preparing to upload file: " + entry.key)
+
+    	def updateStatus = bat (script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${entry.value} -f import/${entry.key} -i Id -w 1 --json > update.json", returnStatus: true)
         println updateStatus
-        if (updateStatus==0){
+
+        statusCheck(updateStatus)        
+        }
+}
+
+def statusCheck (status) {
+    if (status==0){
         jsonUp = readJSON file: 'update.json' 
         
         def usJobId = jsonUp.result.jobId.toString().replace("]", "").replace("[", "")
         def usBatchId = jsonUp.result.id.toString().replace("]", "").replace("[", "")
-
-        println usJobId
-        println usBatchId
         
-        def status = bat (returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:status -i ${usJobId} -b ${usBatchId}")
-        println status
-
-        } else {
-            error (jsonUp.message)
-        }
+        def res = bat (returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:status -i ${usJobId} -b ${usBatchId}")
+        println res
+    } else {
+        error (jsonUp.message)
+    }
 }

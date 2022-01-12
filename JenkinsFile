@@ -134,9 +134,8 @@ def statusCheck (status,sfdxHome) {
         jsonUp = readJSON file: 'update.json' 
 
         println jsonUp
-        
-        def usJobId = jsonUp.result.jobId.toString().replace("]", "").replace("[", "")
-        def usBatchId = jsonUp.result.id.toString().replace("]", "").replace("[", "")
+
+        def usJobId = jsonUp.result.id.toString().replace("]", "").replace("[", "")
         
         def res = bat (returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:status -i '${usJobId}'")
         println res

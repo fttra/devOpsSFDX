@@ -136,7 +136,7 @@ def statusCheck (status,sfdxHome) {
         def usJobId = jsonUp.result.jobId.toString().replace("]", "").replace("[", "")
         def usBatchId = jsonUp.result.id.toString().replace("]", "").replace("[", "")
         
-        def res = bat (returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:status -i ${usJobId} -b ${usBatchId}")
+        def res = bat (returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:status -i '${usJobId}'")
         println res
     } else {
         error (jsonUp.message)

@@ -125,11 +125,11 @@ def updateFiles (sfdxHome, objectType, filesToUpload) {
     	def updateStatus = bat (script: "\"${sfdxHome}/sfdx\" force:data:bulk:upsert -s ${entry.value} -f import/${entry.key} -i Id -w 1 --json > update.json", returnStatus: true)
         println updateStatus
 
-        statusCheck(updateStatus)        
+        statusCheck(updateStatus, sfdxHome)        
         }
 }
 
-def statusCheck (status) {
+def statusCheck (status,sfdxHome) {
     if (status==0){
         jsonUp = readJSON file: 'update.json' 
         

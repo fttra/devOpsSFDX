@@ -2,6 +2,7 @@ core_properties:
   bitbucket_parameters:
     import_directory: "import"
     objects_possible_to_upload: "Account,User"
+    status_check_accepted_retrieve: "Closed,Failed,Aborted"
 credentials:
   Env1:
     server_url: "https://curious-koala-cek3d-dev-ed.my.salesforce.com"

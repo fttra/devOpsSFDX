@@ -4,9 +4,16 @@ node {
 
     //credential folder
     def config = readYaml file: 'yaml/readFile-config.yml'
-    
+
     def importDir = config.core_properties.bitbucket_parameters.import_directory
     def objPossibleToUp = config.core_properties.bitbucket_parameters.objects_possible_to_upload.split(',').collect{it as String}
+    def listOfThings[] = config.core_properties.bitbucket_parameters.status_check_accepted_retrieve
+
+    if ("Closed" in listOfThings){
+        println ("TO dziala")
+    } else {
+        error ("Nie działa")
+    }
 
     println importDir
     println objPossibleToUp.toString()   
@@ -132,11 +139,8 @@ def updateFiles (sfdxHome, objectType, filesToUpload) {
 def statusCheck (status,sfdxHome) {
     if (status==0){
         jsonUp = readJSON file: 'update.json' 
-
+        def jobIdStatus = jsonFile.result.jobId.toString().replace("]", "").replace("[", "")
         println jsonUp
-
-        def usJobId = jsonUp.result.id.toString().replace("]", "").replace("[", "").substring(0, 15)
-        println usJobId
         
         def res = bat (returnStdout: true, script: "\"${sfdxHome}/sfdx\" force:data:bulk:status -i '${usJobId}'")
         println res

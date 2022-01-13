@@ -9,6 +9,8 @@ node {
     def objPossibleToUp = config.core_properties.bitbucket_parameters.objects_possible_to_upload.split(',').collect{it as String}
     def listOfThings = [config.core_properties.bitbucket_parameters.status_check_accepted_retrieve]
 
+    prinlnt listOfThings
+    
     if ("Closed" in listOfThings){
         println ("TO dziala")
     } else {

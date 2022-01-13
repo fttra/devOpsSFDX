@@ -7,7 +7,7 @@ node {
 
     def importDir = config.core_properties.bitbucket_parameters.import_directory
     def objPossibleToUp = config.core_properties.bitbucket_parameters.objects_possible_to_upload.split(',').collect{it as String}
-    def listOfThings = list(config.core_properties.bitbucket_parameters.status_check_accepted_retrieve.split(','))
+    def listOfThings = config.core_properties.bitbucket_parameters.status_check_accepted_retrieve.split(',').collect{it as String}
 
     print listOfThings
     

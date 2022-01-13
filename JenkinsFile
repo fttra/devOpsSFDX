@@ -10,6 +10,10 @@ node {
     def listOfThings = [config.core_properties.bitbucket_parameters.status_check_accepted_retrieve]
 
     print listOfThings
+    
+    for (def i in listOfThings){
+        println (i)
+    }
 
     if ("Closed" in listOfThings){
         print ("TO dziala")

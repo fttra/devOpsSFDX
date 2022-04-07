@@ -1,6 +1,6 @@
 core_properties:
   bitbucket_parameters:
-    import_directory: "import"
+    import_directory: "importasdjsakldshala"
     objects_possible_to_upload: "Account,User"
 credentials:
   Env1:

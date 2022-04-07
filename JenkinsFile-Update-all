@@ -4,7 +4,7 @@ node {
     def devHubName = "${params.Environment}"
     def objectType = "${params.Object}"
     def filesToUpload
-
+adasdas
     def resource = libraryResource resource: 'updateData-config.yml'
     def config = readYaml text: resource
 
@@ -14,8 +14,7 @@ node {
 
 withEnv(["HOME=${env.WORKSPACE}"]){
 
-    stage ('Validate environment'){
-        validateEnvironment(config, devHubName)
+    stage ('Validate environment'){asdadfa
     }
 
     stage ('Validate file to upload'){
